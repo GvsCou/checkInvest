@@ -1,8 +1,8 @@
-#/usr/bin/python3
+#!/usr/bin/python3
 
-import sys, os
+import getpass, os
 
-config_dir: str = '/home/' + sys.argv[1] + '/.config/checkInvest/'
+config_dir: str = '/home/' + getpass.getuser() + '/.config/checkInvest/'
 
 config_file_dict: dict = {
         'path': config_dir + 'checkInvest.config'
