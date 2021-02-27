@@ -46,17 +46,16 @@ def dump_json(path: str, py_dict: dict, indentation: int=2):
 	json.dump(py_dict, w_file, indent=indentation)
 
 
-def add_new():
-	ticker: str = input("Enter the name of the asset: ")
+def add_new(ticker: str):
 	price: float = float(input("Enter the price of the asset: "))
 	quantity: float = float(input("Enter the quantity of the asset: "))
+	
 	new_entry: dict = new_dict(DICT_MODES.NEW, price, quantity, ticker)
 	
 	dump_json(paths['data_file'], new_entry)
 
 
-def add_to_old():
-	ticker: str = input("Enter the name of the asset: ")
+def add_to_old(ticker: str):
 	price: float = float(input("Enter the price of the asset: "))
 	quantity: float = float(input("Enter the quantity of the asset: "))
 	
