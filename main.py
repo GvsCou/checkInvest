@@ -39,9 +39,14 @@ def check_init_setup():
 def one_hifen(option: str):
 	if option[0] == "-" and len(option) > 1 and option[1] != "-":
 		switch(option[1])
+	else:
+		print("Invalid Option")
 
 def check_option():
-	one_hifen(sys.argv[1])
+	if len(sys.argv) > 1:
+		one_hifen(sys.argv[1])
+	else:
+		print("Unrecognized Option")
 
 check_init_setup()
 check_option()
