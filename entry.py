@@ -77,11 +77,11 @@ def add_to_old(ticker: str):
 	
 	old_entry: dict = get_json(paths['data_file'])
 	
-	i: int = 1 
+	i: int = 0 
 	for key in old_entry[ticker]:
-		if key == 'entry_?':
-			++i
-	
+		if 'entry_' in key:
+			i += 1
+	print(i)
 	old_entry[ticker]['entry_' + str(i + 1)] = new_dict(DICT_MODES.OLD, price, quantity)
 
 	dump_json(paths['data_file'], old_entry)
