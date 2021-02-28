@@ -36,9 +36,12 @@ def check_init_setup():
 	if not os.path.isfile(paths['config_file']):
 		setup.check_base_files()
 
+def one_hifen(option: str):
+	if option[0] == "-" and len(option) > 1 and option[1] != "-":
+		switch(option[1])
+
+def check_option():
+	one_hifen(sys.argv[1])
+
 check_init_setup()
-
-
-if sys.argv[1][0] == "-" and len(sys.argv[1]) > 1:
-	switch(sys.argv[1][1])
-
+check_option()
