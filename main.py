@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
-import sys, entry, os
+import sys, entry, os, configparser
+import setup
 from paths import paths
 
 def switch(option: str):
@@ -29,6 +30,13 @@ def switch(option: str):
 	}
 
 	cases.get(option, default)()
+
+
+def check_init_setup():
+	if not os.path.isfile(paths['config_file']):
+		setup.check_base_files()
+
+check_init_setup()
 
 
 if sys.argv[1][0] == "-" and len(sys.argv[1]) > 1:
