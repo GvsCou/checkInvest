@@ -14,7 +14,7 @@ def check_base_files():
 	
 	
 	if os.path.isfile(setup_archives['config_path']):
-		parser = configparser.ConfigParser()
+		parser: configparser = configparser.ConfigParser()
 		parser.read(setup_archives['config_path'])
 		if parser['SETUP'].getboolean('INITIAL_SETUP_DONE', False):
 			return None
@@ -35,3 +35,10 @@ def check_base_files():
 		"CONFIG_FILE =" + setup_archives['config_path']  + '\n' \
 		"DATA_FILE =" + setup_archives['data_path'] + '\n') 
 		setup_archives['config_file'].close()
+
+
+def dict_from_parser() -> dict:
+	path: str = "/home/" + getpass.getuser() + "/.config/checkInvest/checkInvest.config"
+	parser: configparser = configparser.ConfigParser()
+	parser.read(path)
+	return parser._sections

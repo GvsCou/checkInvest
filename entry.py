@@ -1,10 +1,7 @@
 #!/usr/bin/python3
 
-import json
-import os
-import datetime
-import enum
-from paths import paths
+import enum, os, json, datetime
+import setup
 
 class DICT_MODES(enum.Enum):
 	OLD = 0
@@ -60,28 +57,29 @@ def dump_json(path: str, py_dict: dict, indentation: int=2):
 def add_new(ticker: str, mode: int=DICT_MODES.NEW):
 	price: float = float(input("Enter the price of the asset: "))
 	quantity: float = float(input("Enter the quantity of the asset: "))
+	path: str = setup.dict_from_parser()['PATHS']['data_file']
 	
 	if mode == DICT_MODES.NEW:
 		new_entry: dict = new_dict(mode, price, quantity)
-		old_entry: dict = get_json(paths['data_file'])	
+		old_entry: dict = get_json(path)	
 		old_entry[ticker] = new_entry
-		dump_json(paths['data_file'], old_entry)
+		dump_json(path, old_entry)
 
 	elif mode == DICT_MODES.BRAND_NEW:
 		new_entry: dict = new_dict(mode, price, quantity, ticker)
-		dump_json(paths['data_file'], new_entry)
+		dump_json(path, new_entry)
 
 def add_to_old(ticker: str):
 	price: float = float(input("Enter the price of the asset: "))
 	quantity: float = float(input("Enter the quantity of the asset: "))
-	
-	old_entry: dict = get_json(paths['data_file'])
+	path: str = setup.dict_from_parser()['PATHS']['data_file']
+	old_entry: dict = get_json(path)
 	
 	i: int = 0 
 	for key in old_entry[ticker]:
 		if 'entry_' in key:
 			i += 1
-	print(i)
+
 	old_entry[ticker]['entry_' + str(i + 1)] = new_dict(DICT_MODES.OLD, price, quantity)
 
-	dump_json(paths['data_file'], old_entry)
+	dump_json(path, old_entry)
