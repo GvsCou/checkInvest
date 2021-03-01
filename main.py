@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-import sys, entry, os, configparser
+import sys, entry, os, configparser, json
 import setup
 from paths import paths
 
@@ -21,12 +21,21 @@ def switch(option: str):
 		
 			entry.add_new(ticker)
 
+	def list_entries():
+		if os.stat(paths['data_file']).st_size == 0:
+			print("No entries found")
+		else:
+			py_dict: dict = entry.get_json(paths['data_file'])
+			print(json.dumps(py_dict, indent=2, sort_keys=True))
+			
+
 	def default():
 		print("Invalid Option")
 
 
 	cases: dict = {
-		'a': add_entry
+		'a': add_entry,
+		'l': list_entries
 	}
 
 	cases.get(option, default)()
