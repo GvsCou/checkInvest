@@ -1,9 +1,6 @@
 #!/usr/bin/python3
 
 import getpass, os, configparser
-from paths import paths
-
-
 
 def check_base_files():
 	setup_archives: dict = {
