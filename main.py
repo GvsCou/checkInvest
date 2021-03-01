@@ -2,18 +2,18 @@
 
 import sys, entry, os, configparser, json
 import setup, optionFunctions
-from paths import paths
 
 
 def switch(option: str):
 	def add_entry():
 		ticker: str = input("Enter asset name: ")
+		path: str = setup.dict_from_parser()['PATHS']['data_file']
 
-		if os.stat(paths['data_file']).st_size == 0:
+		if os.stat(path).st_size == 0:
 			entry.add_new(ticker, entry.DICT_MODES.BRAND_NEW)
 			return None	
 		else:
-			py_dict: dict = entry.get_json(paths['data_file'])
+			py_dict: dict = entry.get_json(path)
 		
 			for key in py_dict:
 				if key == ticker:
