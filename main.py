@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 import sys, entry, os, configparser, json
-import setup
+import setup, optionFunctions
 from paths import paths
 
 def switch(option: str):
@@ -21,26 +21,13 @@ def switch(option: str):
 		
 			entry.add_new(ticker)
 
-	def list_entries():
-		if os.stat(paths['data_file']).st_size == 0:
-			print("No entries found")
-		elif len(sys.argv) > 3:
-			print("Too many arguments")
-		elif len(sys.argv) > 2:
-			py_dict: dict = entry.get_json(paths['data_file'])[sys.argv[2]]
-			print("Entries for " + sys.argv[2] + ":" + '\n\n' + json.dumps(py_dict, indent=2, sort_keys=True)) 
-		else:
-			py_dict: dict = entry.get_json(paths['data_file'])
-			print(json.dumps(py_dict, indent=2, sort_keys=True))
-			
-
 	def default():
 		print("Invalid Option")
 
 
 	cases: dict = {
 		'a': add_entry,
-		'l': list_entries
+		'l': optionFunctions.list_entries
 	}
 
 	cases.get(option, default)()
