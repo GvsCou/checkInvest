@@ -6,16 +6,12 @@ import setup, optionFunctions
 
 def switch(option: str):
 
-	def default():
-		print("Invalid Option")
-
-
 	cases: dict = {
 		'a': optionFunctions.add_entry,
 		'l': optionFunctions.list_entries
 	}
 
-	cases.get(option, default)()
+	cases.get(option, optionFunctions.default)()
 
 
 def one_hifen(option: str):

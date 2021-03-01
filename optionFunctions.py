@@ -4,6 +4,10 @@ import os, sys, json
 import entry, setup
 
 
+def default():
+	print("Invalid Option")
+
+
 def add_entry():
 	ticker: str = input("Enter asset name: ")
 	path: str = setup.dict_from_parser()['PATHS']['data_file']
