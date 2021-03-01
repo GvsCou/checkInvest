@@ -4,6 +4,7 @@ import sys, entry, os, configparser, json
 import setup, optionFunctions
 from paths import paths
 
+
 def switch(option: str):
 	def add_entry():
 		ticker: str = input("Enter asset name: ")
@@ -33,10 +34,6 @@ def switch(option: str):
 	cases.get(option, default)()
 
 
-def check_init_setup():
-	if not os.path.isfile(paths['config_file']):
-		setup.check_base_files()
-
 def one_hifen(option: str):
 	if option[0] == "-" and len(option) > 1 and option[1] != "-":
 		switch(option[1])
@@ -49,5 +46,5 @@ def check_option():
 	else:
 		print("Unrecognized Option")
 
-check_init_setup()
+setup.check_base_files()
 check_option()

@@ -1,30 +1,37 @@
 #!/usr/bin/python3
 
-import getpass, os
+import getpass, os, configparser
 from paths import paths
 
-config_file_dict: dict = {
-        'path': paths['config_file']
-}
 
-data_file_dict: dict = {
-        'path': paths['data_file']
-}
 
 def check_base_files():
-	if os.path.isfile(config_file_dict['path']) and os.path.isfile(data_file_dict['path']):
-		pass
-	else:
-		if not os.path.isdir(paths['config_dir']):
-            		os.mkdir(paths['config_dir'])
-		if not os.path.isfile(data_file_dict['path']):
-			data_file_dict['file'] = open(data_file_dict['path'], 'w')
-			data_file_dict['file'].close()
-		if not os.path.isfile(config_file_dict['path']):
-			config_file_dict['file'] = open(config_file_dict['path'],'w')
-			config_file_dict['file'].write("[SETUP]" + "\n" \
-							"INITIAL_SETUP_DONE = true")
-			config_file_dict['file'].close()
+	setup_archives: dict = {
+		'dir': "/home/" + getpass.getuser() + "/.config/checkInvest/",
+		'config_path': "/home/" + getpass.getuser() + "/.config/checkInvest/checkInvest.config",
+		'data_path': "/home/" + getpass.getuser() + "/.config/checkInvest/data.json"
+	}
+	
+	
+	if os.path.isfile(setup_archives['config_path']):
+		parser = configparser.ConfigParser()
+		parser.read(setup_archives['config_path'])
+		if parser['SETUP'].getboolean('INITIAL_SETUP_DONE', False):
+			return None
 
-
-check_base_files()
+	if not os.path.isdir(setup_archives['dir']):
+            	os.mkdir(setup_archives['dir'])
+	if not os.path.isfile(setup_archives['data_path']):
+		setup_archives['data_file'] = open(setup_archives['data_path'], 'w')
+		setup_archives['data_file'].close()
+	if not os.path.isfile(setup_archives['config_path']):
+		setup_archives['config_file'] = open(setup_archives['config_path'], 'w')
+		setup_archives['config_file'].write(\
+		"[SETUP]" + "\n" \
+		"INITIAL_SETUP_DONE = true" + '\n' \
+		"" + '\n' \
+		"[PATHS]" + '\n' \
+		"SETUP_DIR =" + setup_archives['dir'] + '\n' \
+		"CONFIG_FILE =" + setup_archives['config_path']  + '\n' \
+		"DATA_FILE =" + setup_archives['data_path'] + '\n') 
+		setup_archives['config_file'].close()
