@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-import sys, entry, os, configparser, json
+import sys
 import setup, optionFunctions
 
 
