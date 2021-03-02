@@ -57,7 +57,7 @@ def dump_json(path: str, py_dict: dict, indentation: int=2):
 def add_new(ticker: str, mode: int=DICT_MODES.NEW):
 	price: float = float(input("Enter the price of the asset: "))
 	quantity: float = float(input("Enter the quantity of the asset: "))
-	path: str = setup.dict_from_parser()['PATHS']['data_file']
+	path: str = setup.dict_from_parser()['DATA_SETS']['current']
 	
 	if mode == DICT_MODES.NEW:
 		new_entry: dict = new_dict(mode, price, quantity)
@@ -72,7 +72,7 @@ def add_new(ticker: str, mode: int=DICT_MODES.NEW):
 def add_to_old(ticker: str):
 	price: float = float(input("Enter the price of the asset: "))
 	quantity: float = float(input("Enter the quantity of the asset: "))
-	path: str = setup.dict_from_parser()['PATHS']['data_file']
+	path: str = setup.dict_from_parser()['DATA_SETS']['current']
 	old_entry: dict = get_json(path)
 	
 	i: int = 0 

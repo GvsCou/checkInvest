@@ -45,7 +45,10 @@ def check_base_files():
 		"SETUP_DIR =" + setup_archives['dir'] + '\n' \
 		"CONFIG_FILE =" + setup_archives['config_path']  + '\n' \
 		"DATA_SETS_FILE =" + setup_archives['data_sets_path'] + '\n' \
-		"DATA_SETS_DIR =" + setup_archives['data_sets_dir']) 
+		"DATA_SETS_DIR =" + setup_archives['data_sets_dir'] + '\n' \
+		"" + '\n' \
+		"[DATA_SET]" + '\n' \
+		"CURRENT =" + setup_archives['data_sets_dir'] + "dataSet1.json" + '\n') 
 		setup_archives['config_file'].close()
 
 
