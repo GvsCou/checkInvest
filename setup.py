@@ -1,12 +1,13 @@
 #!/usr/bin/python3
 
-import getpass, os, configparser
+import getpass, os, configparser, json
 
 def check_base_files():
 	setup_archives: dict = {
 		'dir': "/home/" + getpass.getuser() + "/.config/checkInvest/",
 		'config_path': "/home/" + getpass.getuser() + "/.config/checkInvest/checkInvest.config",
-		'data_path': "/home/" + getpass.getuser() + "/.config/checkInvest/data.json"
+		'data_sets_path': "/home/" + getpass.getuser() + "/.config/checkInvest/data_sets.json",
+		'data_sets_dir':  "/home/" + getpass.getuser() + "/.config/checkInvest/dataSets/",
 	}
 	
 	
@@ -15,12 +16,25 @@ def check_base_files():
 		parser.read(setup_archives['config_path'])
 		if parser['SETUP'].getboolean('INITIAL_SETUP_DONE', False):
 			return None
+	
+	os.mkdir(setup_archives['dir'])
+	
+	if not os.path.isfile(setup_archives['data_sets_path']):
+		os.mkdir(setup_archives['data_sets_dir'])
+		setup_archives['data_sets_file'] = open(setup_archives['data_sets_path'], 'w')
+		data_sets: dict = {
+			'data_sets': {
+				'data_set_1': {
+					'path': setup_archives['data_sets_dir'] + "dataSet1.json",
+					'alias': "Default"
+				}
+			}
+		}
+		json.dump(data_sets, setup_archives['data_sets_file'], sort_keys = True, indent = 2)
+		data_set_1: file = open(data_sets['data_set_1']['path'], 'w')
+		setup_archives['data_sets_file'].close()
+		data_sets['data_sets']['data_set_1']['path'].close()
 
-	if not os.path.isdir(setup_archives['dir']):
-            	os.mkdir(setup_archives['dir'])
-	if not os.path.isfile(setup_archives['data_path']):
-		setup_archives['data_file'] = open(setup_archives['data_path'], 'w')
-		setup_archives['data_file'].close()
 	if not os.path.isfile(setup_archives['config_path']):
 		setup_archives['config_file'] = open(setup_archives['config_path'], 'w')
 		setup_archives['config_file'].write(\
@@ -30,7 +44,8 @@ def check_base_files():
 		"[PATHS]" + '\n' \
 		"SETUP_DIR =" + setup_archives['dir'] + '\n' \
 		"CONFIG_FILE =" + setup_archives['config_path']  + '\n' \
-		"DATA_FILE =" + setup_archives['data_path'] + '\n') 
+		"DATA_SETS_FILE =" + setup_archives['data_sets_path'] + '\n' \
+		"DATA_SETS_DIR =" + setup_archives['data_sets_dir']) 
 		setup_archives['config_file'].close()
 
 
