@@ -4,8 +4,6 @@ import os, sys, json
 import entry, setup
 
 
-def default():
-	print("Invalid Option")
 
 
 def add_entry():
@@ -49,7 +47,8 @@ def list_entries():
 	else:
 		py_dict: dict = entry.get_json(path)
 		print(json.dumps(py_dict, indent=2, sort_keys=True))
-		
 
 
+def default():
+	print("Invalid Option")
 
