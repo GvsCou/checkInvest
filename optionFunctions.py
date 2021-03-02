@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-import os, sys, json
+import os, sys, json, configparser
 import entry, setup
 
 
@@ -51,11 +51,62 @@ def list_entries():
 
 def data_base():
 	data_sets_paths: str = setup.dict_from_parser()['PATHS']['data_sets_file']
+	data_sets_dir: str = setup.dict_from_parser()['PATHS']['data_sets_dir']
 	all_data_sets: dict = entry.get_json(data_sets_paths)
 	
+	def what_to_do():	
+		args: list = sys.argv
+		del args[0:2]
+		foo_dict: dict = entry.get_json(data_sets_paths)
+		changing_data_sets: dict = dict(foo_dict)
+		for foo in args:
+			for key in changing_data_sets:
+				for key2 in changing_data_sets[key]:
+					if foo == changing_data_sets[key][key2].get('alias', ""):
+						change_current(changing_data_sets[key][key2]['path'], foo)
+						return None
+					else:
+						add_new(foo, foo_dict)
+
+	def add_new(alias: str, changing_dict: dict):
+		py_dict: dict = changing_dict
+		i: int = 0
+		for key in py_dict:
+			pass
+			for key2 in py_dict[key]:
+				i += 1
+				if py_dict[key][key2].get('current', False):
+					 py_dict[key][key2]['current'] = False
+
+		py_dict['data_sets']['data_set_' + str(i + 1)] = {
+						'path': data_sets_dir + "dataSet" + str(i + 1) + ".json",
+						'alias': alias,
+						'current': True
+		}
+		
+		entry.dump_json(data_sets_paths, py_dict)
+		new_data_file: file = open(py_dict['data_sets']['data_set_' + str(i + 1)]['path'], 'w')
+		new_data_file.close()
+		
+		parser: configparser = configparser.ConfigParser()
+		parser.read(setup.dict_from_parser()['PATHS']['config_file'])
+		parser.set('DATA_SET', 'current', py_dict['data_sets']['data_set_' + str(i + 1)]['path'])
+		config_file: file = open(setup.dict_from_parser()['PATHS']['config_file'], 'w')
+		parser.write(config_file)
+		config_file.close()
+	
+	def change_current(path: str, new_current: str):
+		parser: configparser = configparser.ConfigParser()
+		parser.read(setup.dict_from_parser()['PATHS']['config_file'])
+		parser.set('DATA_SET', 'current', path)
+		config_file: file = open(setup.dict_from_parser()['PATHS']['config_file'], 'w')
+		parser.write(config_file)
+		config_file.close()
+		print(new_current + " is the new current data set")
+
 	if len(sys.argv) > 2:
-		pass
-	else:
+		what_to_do()
+	else: #show current data set
 		for key in all_data_sets:
 			for key2 in all_data_sets[key]:
 				if all_data_sets[key][key2].get('current', False):
