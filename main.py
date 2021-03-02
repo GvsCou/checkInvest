@@ -8,7 +8,8 @@ def switch(option: str):
 
 	cases: dict = {
 		'a': optionFunctions.add_entry,
-		'l': optionFunctions.list_entries
+		'l': optionFunctions.list_entries,
+		'd': optionFunctions.data_base
 	}
 
 	cases.get(option, optionFunctions.default)()
