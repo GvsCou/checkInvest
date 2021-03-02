@@ -31,9 +31,9 @@ def check_base_files():
 			}
 		}
 		json.dump(data_sets, setup_archives['data_sets_file'], sort_keys = True, indent = 2)
-		data_set_1: file = open(data_sets['data_set_1']['path'], 'w')
+		data_set_1: file = open(data_sets['data_sets']['data_set_1']['path'], 'w')
 		setup_archives['data_sets_file'].close()
-		data_sets['data_sets']['data_set_1']['path'].close()
+		data_set_1.close()
 
 	if not os.path.isfile(setup_archives['config_path']):
 		setup_archives['config_file'] = open(setup_archives['config_path'], 'w')
