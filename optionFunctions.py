@@ -10,7 +10,7 @@ def default():
 
 def add_entry():
 	ticker: str = input("Enter asset name: ")
-	path: str = setup.dict_from_parser()['PATHS']['data_file']
+	path: str = setup.dict_from_parser()['DATA_SET']['current']
 	if os.stat(path).st_size == 0:
 		entry.add_new(ticker, entry.DICT_MODES.BRAND_NEW)
 	else:
@@ -25,7 +25,7 @@ def add_entry():
 
 
 def list_entries():
-	path: str = setup.dict_from_parser()['PATHS']['data_file']
+	path: str = setup.dict_from_parser()['DATA_SET']['current']
 
 	if os.stat(path).st_size == 0:
 		print("There are no entries in the data file")
