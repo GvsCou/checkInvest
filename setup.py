@@ -2,6 +2,19 @@
 
 import getpass, os, configparser, json
 
+def data_set_dir(key: str, alias: str, path: str, is_current=False) -> dict:
+	new_dict: dict = {
+		'data_sets': {
+				key: {
+					'path': path,
+					'alias': alias,
+					'current': is_current
+				}
+			}
+		}
+	return new_dict
+
+
 def check_base_files():
 	setup_archives: dict = {
 		'dir': "/home/" + getpass.getuser() + "/.config/checkInvest/",
@@ -22,14 +35,8 @@ def check_base_files():
 	if not os.path.isfile(setup_archives['data_sets_path']):
 		os.mkdir(setup_archives['data_sets_dir'])
 		setup_archives['data_sets_file'] = open(setup_archives['data_sets_path'], 'w')
-		data_sets: dict = {
-			'data_sets': {
-				'data_set_1': {
-					'path': setup_archives['data_sets_dir'] + "dataSet1.json",
-					'alias': "Default"
-				}
-			}
-		}
+		data_sets: dict = data_set_dir("data_set_1", "Default", setup_archives['data_sets_dir'] + 
+		"dataSet1.json", is_current=True)
 		json.dump(data_sets, setup_archives['data_sets_file'], sort_keys = True, indent = 2)
 		data_set_1: file = open(data_sets['data_sets']['data_set_1']['path'], 'w')
 		setup_archives['data_sets_file'].close()
