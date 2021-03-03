@@ -74,14 +74,9 @@ def data_base():
 		entry.dump_json(data_sets_paths, py_dict)
 		new_data_file: file = open(py_dict['data_sets']['data_set_' + str(i + 1)]['path'], 'w')
 		new_data_file.close()
-		
-		parser: configparser = configparser.ConfigParser()
-		parser.read(setup.dict_from_parser()['PATHS']['config_file'])
-		parser.set('DATA_SET', 'current', py_dict['data_sets']['data_set_' + str(i + 1)]['path'])
-		config_file: file = open(setup.dict_from_parser()['PATHS']['config_file'], 'w')
-		parser.write(config_file)
-		config_file.close()
+		dataSet.config_set_current(py_dict['data_sets']['data_set_' + str(i + 1)]['path'])
 	
+
 	def change_current(new_current: str):
 		#change .config
 		path: str = dataSet.get_path(new_current)	
