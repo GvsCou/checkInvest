@@ -57,7 +57,7 @@ def data_base():
 	
 	
 	def add_new(alias: str):
-		py_dict: dict = entry.get_json(setup.dict_from_parser()['PATHS']['data_sets_file'])
+		py_dict: dict = all_data_sets
 		i: int = 0
 		for key in list(py_dict):
 			for key2 in list(py_dict[key]):
@@ -82,7 +82,7 @@ def data_base():
 		path: str = dataSet.get_path(new_current)	
 		dataSet.config_set_current(path)
 		#change data_sets
-		py_dict: dict = entry.get_json(setup.dict_from_parser()['PATHS']['data_sets_file'])
+		py_dict: dict = all_data_sets
 		for key in list(py_dict):
 			for key2 in list(py_dict[key]):
 				if py_dict[key][key2].get('alias', "") == new_current:
