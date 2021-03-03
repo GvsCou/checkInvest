@@ -2,7 +2,7 @@
 
 import os, sys, json, configparser
 import setup
-from scriptsOpt import entry
+from scriptsOpt import entry, dataBase
 
 
 
@@ -55,27 +55,7 @@ def data_base():
 	data_sets_dir: str = setup.dict_from_parser()['PATHS']['data_sets_dir']
 	all_data_sets: dict = entry.get_json(data_sets_paths)
 	
-	def get_existing_aliases() -> list:
-		data_sets: dict = entry.get_json(setup.dict_from_parser()['PATHS']['data_sets_file'])
-		aliases: list = []
-		for key in data_sets:
-			for key2 in data_sets[key]:
-				aliases.append(data_sets[key][key2].get('alias', None))
-		data_sets.clear()
-		return aliases
 	
-	def get_path(alias: str) -> str:
-		data_sets: dict = entry.get_json(setup.dict_from_parser()['PATHS']['data_sets_file'])
-		path: str = ""
-		for key in data_sets:
-			for key2 in data_sets[key]:
-				if data_sets[key][key2].get('alias', "") == alias:
-					path = 	data_sets[key][key2].get('path', "")
-					break
-		data_sets.clear()
-		return path
-
-
 	def add_new(alias: str):
 		py_dict: dict = entry.get_json(setup.dict_from_parser()['PATHS']['data_sets_file'])
 		i: int = 0
@@ -104,7 +84,7 @@ def data_base():
 	
 	def change_current(new_current: str):
 		#change .config
-		path: str = get_path(new_current)	
+		path: str = dataBase.get_path(new_current)	
 		parser: configparser = configparser.ConfigParser()
 		parser.read(setup.dict_from_parser()['PATHS']['config_file'])
 		parser.set('DATA_SET', 'current', path)
@@ -123,7 +103,7 @@ def data_base():
 		print(new_current + " is the new current data set")
 
 	if len(sys.argv) > 2:
-		aliases: list = get_existing_aliases()
+		aliases: list = dataBase.get_existing_aliases()
 		args: list = sys.argv
 		del args[0:2]
 		for arg in args:
