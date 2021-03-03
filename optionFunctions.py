@@ -1,7 +1,8 @@
 #!/usr/bin/python3
 
 import os, sys, json, configparser
-import entry, setup
+import setup
+from scriptsOpt import entry
 
 
 
