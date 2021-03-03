@@ -114,8 +114,10 @@ def data_base():
 		py_dict: dict = entry.get_json(setup.dict_from_parser()['PATHS']['data_sets_file'])
 		for key in list(py_dict):
 			for key2 in list(py_dict[key]):
-				if py_dict[key][key2].get('alias', ""):
-					 py_dict[key][key2]['current'] = True 
+				if py_dict[key][key2].get('alias', "") == new_current:
+					 py_dict[key][key2]['current'] = True
+				else:
+					py_dict[key][key2]['current'] = False
 		entry.dump_json(data_sets_paths, py_dict)
 		print(new_current + " is the new current data set")
 
