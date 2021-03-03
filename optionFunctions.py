@@ -54,26 +54,32 @@ def data_base():
 	data_sets_dir: str = setup.dict_from_parser()['PATHS']['data_sets_dir']
 	all_data_sets: dict = entry.get_json(data_sets_paths)
 	
-	def what_to_do():	
-		args: list = sys.argv
-		del args[0:2]
-		foo_dict: dict = entry.get_json(data_sets_paths)
-		changing_data_sets: dict = dict(foo_dict)
-		for foo in args:
-			for key in changing_data_sets:
-				for key2 in changing_data_sets[key]:
-					if foo == changing_data_sets[key][key2].get('alias', ""):
-						change_current(changing_data_sets[key][key2]['path'], foo)
-						return None
-					else:
-						add_new(foo, foo_dict)
+	def get_existing_aliases() -> list:
+		data_sets: dict = entry.get_json(setup.dict_from_parser()['PATHS']['data_sets_file'])
+		aliases: list = []
+		for key in data_sets:
+			for key2 in data_sets[key]:
+				aliases.append(data_sets[key][key2].get('alias', None))
+		data_sets.clear()
+		return aliases
+	
+	def get_path(alias: str) -> str:
+		data_sets: dict = entry.get_json(setup.dict_from_parser()['PATHS']['data_sets_file'])
+		path: str = ""
+		for key in data_sets:
+			for key2 in data_sets[key]:
+				if data_sets[key][key2].get('alias', "") == alias:
+					path = 	data_sets[key][key2].get('path', "")
+					break
+		data_sets.clear()
+		return path
 
-	def add_new(alias: str, changing_dict: dict):
-		py_dict: dict = changing_dict
+
+	def add_new(alias: str):
+		py_dict: dict = entry.get_json(setup.dict_from_parser()['PATHS']['data_sets_file'])
 		i: int = 0
-		for key in py_dict:
-			pass
-			for key2 in py_dict[key]:
+		for key in list(py_dict):
+			for key2 in list(py_dict[key]):
 				i += 1
 				if py_dict[key][key2].get('current', False):
 					 py_dict[key][key2]['current'] = False
@@ -95,7 +101,8 @@ def data_base():
 		parser.write(config_file)
 		config_file.close()
 	
-	def change_current(path: str, new_current: str):
+	def change_current(new_current: str):
+		path: str = get_path(new_current)	
 		parser: configparser = configparser.ConfigParser()
 		parser.read(setup.dict_from_parser()['PATHS']['config_file'])
 		parser.set('DATA_SET', 'current', path)
@@ -105,7 +112,15 @@ def data_base():
 		print(new_current + " is the new current data set")
 
 	if len(sys.argv) > 2:
-		what_to_do()
+		aliases: list = get_existing_aliases()
+		args: list = sys.argv
+		del args[0:2]
+		for arg in args:
+			if arg in aliases:
+				change_current(arg)
+			else:
+				add_new(arg)
+					
 	else: #show current data set
 		for key in all_data_sets:
 			for key2 in all_data_sets[key]:
