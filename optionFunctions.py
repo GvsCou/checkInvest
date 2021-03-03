@@ -2,7 +2,7 @@
 
 import os, sys, json, configparser
 import setup
-from scriptsOpt import entry, dataBase
+from scriptsOpt import entry, dataSet
 
 
 
@@ -84,13 +84,8 @@ def data_base():
 	
 	def change_current(new_current: str):
 		#change .config
-		path: str = dataBase.get_path(new_current)	
-		parser: configparser = configparser.ConfigParser()
-		parser.read(setup.dict_from_parser()['PATHS']['config_file'])
-		parser.set('DATA_SET', 'current', path)
-		config_file: file = open(setup.dict_from_parser()['PATHS']['config_file'], 'w')
-		parser.write(config_file)
-		config_file.close()
+		path: str = dataSet.get_path(new_current)	
+		dataSet.config_set_current(path)
 		#change data_sets
 		py_dict: dict = entry.get_json(setup.dict_from_parser()['PATHS']['data_sets_file'])
 		for key in list(py_dict):
@@ -103,7 +98,7 @@ def data_base():
 		print(new_current + " is the new current data set")
 
 	if len(sys.argv) > 2:
-		aliases: list = dataBase.get_existing_aliases()
+		aliases: list = dataSet.get_existing_aliases()
 		args: list = sys.argv
 		del args[0:2]
 		for arg in args:
