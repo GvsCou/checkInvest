@@ -85,9 +85,9 @@ def data_base():
 					 py_dict[key][key2]['current'] = False
 
 		py_dict['data_sets']['data_set_' + str(i + 1)] = {
-						'path': data_sets_dir + "dataSet" + str(i + 1) + ".json",
 						'alias': alias,
-						'current': True
+						'current': True,
+						'path': data_sets_dir + "dataSet" + str(i + 1) + ".json"
 		}
 		
 		entry.dump_json(data_sets_paths, py_dict)
@@ -102,6 +102,7 @@ def data_base():
 		config_file.close()
 	
 	def change_current(new_current: str):
+		#change .config
 		path: str = get_path(new_current)	
 		parser: configparser = configparser.ConfigParser()
 		parser.read(setup.dict_from_parser()['PATHS']['config_file'])
@@ -109,6 +110,13 @@ def data_base():
 		config_file: file = open(setup.dict_from_parser()['PATHS']['config_file'], 'w')
 		parser.write(config_file)
 		config_file.close()
+		#change data_sets
+		py_dict: dict = entry.get_json(setup.dict_from_parser()['PATHS']['data_sets_file'])
+		for key in list(py_dict):
+			for key2 in list(py_dict[key]):
+				if py_dict[key][key2].get('alias', ""):
+					 py_dict[key][key2]['current'] = True 
+		entry.dump_json(data_sets_paths, py_dict)
 		print(new_current + " is the new current data set")
 
 	if len(sys.argv) > 2:
