@@ -76,6 +76,7 @@ def data_base():
 		new_data_file: file = open(py_dict['data_sets']['data_set_' + str(i + 1)]['path'], 'w')
 		new_data_file.close()
 		dataSet.config_set_current(py_dict['data_sets']['data_set_' + str(i + 1)]['path'])
+		print(alias + " created")
 
 		
 
