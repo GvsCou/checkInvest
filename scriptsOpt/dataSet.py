@@ -48,6 +48,6 @@ def change_current(new_current: str):
 				else:
 					py_dict[key][key2]['current'] = False
 		entry.dump_json(data_sets_paths, py_dict)
-		print(new_current + " is the new current data set")
+		print("'" + new_current + "' is the new current data set")
 
 
