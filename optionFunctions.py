@@ -97,6 +97,19 @@ def data_base():
 					print("Current data set: " + all_data_sets[key][key2].get('alias', "Not Found"))
 					return None
 
+def list_data_sets():
+	path: str = setup.dict_from_parser()['PATHS']['data_sets_file']
+	if os.stat(path).st_size == 0:
+		print("There are no data sets")
+	else:
+		py_dict: dict = entry.get_json(path)
+		aliases: list = []
+		for key in py_dict:
+			for key2 in py_dict[key]:
+				aliases.append(py_dict[key][key2].get('alias'))
+		for i in range(0, len(aliases), 1):
+			print(str(i) + ": " + aliases[i]) 
+
 def remove_data_base():
 	if len (sys.argv) < 3:
 		print("No data set given")
