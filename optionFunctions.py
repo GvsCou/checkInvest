@@ -99,7 +99,7 @@ def data_base():
 
 def remove_data_base():
 	if len (sys.argv) < 3:
-		print("No argument given")
+		print("No data set given")
 		return None
 	data_sets_paths: str = setup.dict_from_parser()['PATHS']['data_sets_file']
 	alias: str = sys.argv[2]
@@ -121,7 +121,9 @@ def remove_data_base():
 					del new_set_dict[key][key2]
 					entry.dump_json(data_sets_paths, new_set_dict)
 					print(alias + " deleted")
+					return None
 						
+		print("'" + alias + "' not found")
 def default():
 	print("Invalid Option")
 
