@@ -32,3 +32,22 @@ def config_set_current(path: str):
 	config_file: file = open(setup.dict_from_parser()['PATHS']['config_file'], 'w')
 	parser.write(config_file)
 	config_file.close()
+
+
+def change_current(new_current: str):
+		#change .config
+		path: str = get_path(new_current)	
+		config_set_current(path)
+		data_sets_paths: str = setup.dict_from_parser()['PATHS']['data_sets_file']
+		#change data_sets
+		py_dict: dict = entry.get_json(data_sets_paths)
+		for key in list(py_dict):
+			for key2 in list(py_dict[key]):
+				if py_dict[key][key2].get('alias', "") == new_current:
+					 py_dict[key][key2]['current'] = True
+				else:
+					py_dict[key][key2]['current'] = False
+		entry.dump_json(data_sets_paths, py_dict)
+		print(new_current + " is the new current data set")
+
+

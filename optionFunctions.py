@@ -50,6 +50,7 @@ def list_entries():
 		print(json.dumps(py_dict, indent=2, sort_keys=True))
 
 
+
 def data_base():
 	data_sets_paths: str = setup.dict_from_parser()['PATHS']['data_sets_file']
 	data_sets_dir: str = setup.dict_from_parser()['PATHS']['data_sets_dir']
@@ -75,22 +76,8 @@ def data_base():
 		new_data_file: file = open(py_dict['data_sets']['data_set_' + str(i + 1)]['path'], 'w')
 		new_data_file.close()
 		dataSet.config_set_current(py_dict['data_sets']['data_set_' + str(i + 1)]['path'])
-	
 
-	def change_current(new_current: str):
-		#change .config
-		path: str = dataSet.get_path(new_current)	
-		dataSet.config_set_current(path)
-		#change data_sets
-		py_dict: dict = all_data_sets
-		for key in list(py_dict):
-			for key2 in list(py_dict[key]):
-				if py_dict[key][key2].get('alias', "") == new_current:
-					 py_dict[key][key2]['current'] = True
-				else:
-					py_dict[key][key2]['current'] = False
-		entry.dump_json(data_sets_paths, py_dict)
-		print(new_current + " is the new current data set")
+		
 
 	if len(sys.argv) > 2:
 		aliases: list = dataSet.get_existing_aliases()
@@ -98,7 +85,7 @@ def data_base():
 		del args[0:2]
 		for arg in args:
 			if arg in aliases:
-				change_current(arg)
+				dataSet.change_current(arg)
 			else:
 				add_new(arg)
 					
@@ -109,6 +96,31 @@ def data_base():
 					print("Current data set: " + all_data_sets[key][key2].get('alias', "Not Found"))
 					return None
 
+def remove_data_base():
+	if len (sys.argv) < 3:
+		print("No argument given")
+		return None
+	data_sets_paths: str = setup.dict_from_parser()['PATHS']['data_sets_file']
+	alias: str = sys.argv[2]
+	file_path: str = ""
+	all_data_sets: dict = entry.get_json(data_sets_paths)
+	
+	if alias == "Default":
+		print("You can neither delete 'Default' nor have zero data sets")
+		return None
+	else:
+		for key in list(all_data_sets):
+			for key2 in list(all_data_sets[key]):
+				if alias == all_data_sets[key][key2].get('alias', ""):
+					file_path = all_data_sets[key][key2]['path']
+					os.remove(file_path)
+					if all_data_sets[key][key2].get('current', False): 
+						dataSet.change_current('Default')
+					new_set_dict: dict = entry.get_json(data_sets_paths)
+					del new_set_dict[key][key2]
+					entry.dump_json(data_sets_paths, new_set_dict)
+					print(alias + " deleted")
+						
 def default():
 	print("Invalid Option")
 

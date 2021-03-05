@@ -9,7 +9,8 @@ def switch(option: str):
 	cases: dict = {
 		'a': optionFunctions.add_entry,
 		'l': optionFunctions.list_entries,
-		'd': optionFunctions.data_base
+		'd': optionFunctions.data_base,
+		'rd': optionFunctions.remove_data_base
 	}
 
 	cases.get(option, optionFunctions.default)()
@@ -17,7 +18,7 @@ def switch(option: str):
 
 def one_hifen(option: str):
 	if option[0] == "-" and len(option) > 1 and option[1] != "-":
-		switch(option[1])
+		switch(option[1:])
 	else:
 		print("Invalid Option")
 
