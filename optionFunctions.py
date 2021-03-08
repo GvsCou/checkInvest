@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-import os, sys, json, configparser
+import os, sys, json, configparser, fnmatch
 import setup
 from scriptsOpt import entry, dataSet
 
@@ -25,9 +25,14 @@ def add_entry():
 
 def list_entries():
 	path: str = setup.dict_from_parser()['DATA_SET']['current']
+	args: list = sys.argv	
+	possible_modes: list = fnmatch.filter(args, 'as=?*')
 
 	if os.stat(path).st_size == 0:
 		print("There are no entries in the data file")
+	elif len(possible_modes) != 0:
+		mode: str = possible_modes.pop(-1)[3:]
+		print(mode)
 	elif len(sys.argv) > 2:
 		args: list = []
 
