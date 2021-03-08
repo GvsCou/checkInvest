@@ -30,36 +30,15 @@ def list_entries():
 
 	def switch_list(option: str):
 		cases: dict = {
-			'table': listModes.table
+			'json': listModes.json_mode
 		}
-		cases.get(option, listModes.default)()
+		cases.get(option, listModes.table_mode)()
 
 	if os.stat(path).st_size == 0:
 		print("There are no entries in the data file")
-	elif len(possible_modes) != 0:
-		mode: str = possible_modes.pop(-1)[3:]
-		switch_list(mode)
-	elif len(sys.argv) > 2:
-		args: list = []
-
-		for i in range(2, len(sys.argv), 1):
-			args.append(sys.argv[i].upper())
-			
-		py_dict = entry.get_json(path)
-		for key in py_dict:
-			if key in args:
-				args.remove(key)
-				print("Entries for " + key + ":" + '\n\n' \
-				+ json.dumps(py_dict[key], indent=2, sort_keys=True) + '\n\n')
-
-		unfound: int = len(args)
-		if unfound != 0:
-			for foo in args:
-				print(foo + " was not found among the entries" + '\n')
 	else:
-		py_dict: dict = entry.get_json(path)
-		print(json.dumps(py_dict, indent=2, sort_keys=True))
-
+		mode: str = possible_modes.pop(-1)[3:] if len(possible_modes) > 0 else ""
+		switch_list(mode)
 
 
 def data_base():
