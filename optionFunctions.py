@@ -2,7 +2,7 @@
 
 import os, sys, json, configparser, fnmatch
 import setup
-from scriptsOpt import entry, dataSet
+from scriptsOpt import entry, dataSet, listModes
 
 
 
@@ -28,11 +28,17 @@ def list_entries():
 	args: list = sys.argv	
 	possible_modes: list = fnmatch.filter(args, 'as=?*')
 
+	def switch_list(option: str):
+		cases: dict = {
+			'table': listModes.table
+		}
+		cases.get(option, listModes.default)()
+
 	if os.stat(path).st_size == 0:
 		print("There are no entries in the data file")
 	elif len(possible_modes) != 0:
 		mode: str = possible_modes.pop(-1)[3:]
-		print(mode)
+		switch_list(mode)
 	elif len(sys.argv) > 2:
 		args: list = []
 
