@@ -27,23 +27,18 @@ def list_entries():
 	path: str = setup.dict_from_parser()['DATA_SET']['current']
 	args: list = [] if len(sys.argv) < 3 else [foo for foo in sys.argv[2:] if not fnmatch.fnmatch(foo, 'as=?*')]
 	possible_modes: list = fnmatch.filter(sys.argv, 'as=?*')
-	print(str(args) + '\n' + str(possible_modes))
-	exit()
 
-	def switch_list(option: str, do_all: bool=True, tickers: list=[]):
+	def switch_list(option: str, tickers: list):
 		cases: dict = {
 			'json': listModes.json_mode
 		}
-		cases.get(option, listModes.table_mode)(do_all, tickers)
+		cases.get(option, listModes.table_mode)(tickers)
 
 	if os.stat(path).st_size == 0:
 		print("There are no entries in the data file")
 	else:
 		mode: str = possible_modes.pop(-1)[3:] if len(possible_modes) > 0 else ""
-		if not args:
-			switch_list(mode)
-		else:
-			print("ARGS")
+		switch_list(mode, args)
 
 
 def data_base():
