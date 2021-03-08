@@ -8,10 +8,11 @@ def table_mode(tickers: list):
 	found: bool = True
 	
 	if tickers:
+		not_found_list: list = []
 		found = False
 		for ticker in tickers:
 			if ticker not in py_dict:
-				print(ticker + " not Found")
+				not_found_list.append(ticker)
 			else:
 				found = True
 	if found:
@@ -24,6 +25,11 @@ def table_mode(tickers: list):
 		for key in py_dict[ticker]:
 			qtd += py_dict[ticker][key].get('quantity', 0.0)
 		print(ticker + '\t' + str(qtd))
+	
+	if not_found_list:
+		print("")
+		for elem in not_found_list:
+			print(elem + " not found")
 		
 
 def json_mode(tickers: list):
