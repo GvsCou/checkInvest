@@ -1,5 +1,5 @@
 import sys, json
-import setup
+import setup, cryptonator
 from . import entry
 
 def table_mode(tickers: list):
@@ -16,15 +16,20 @@ def table_mode(tickers: list):
 			else:
 				found = True
 	if found:
-		print("Ticker" + '\t' + "Quantity")
+		print("{:.<15}{:.<15}{:.<15}Value".format("Ticker","Quantity", "Price"))
 
 	for ticker in py_dict:
 		if tickers and ticker not in tickers:
 			continue 
 		qtd: float = 0.0
+		price: float = 0.0 if ticker not in cryptonator.get_available_currencies() \
+		else cryptonator.get_exchange_rate(ticker.lower(), 'usd')
+		value: float = 0.0
 		for key in py_dict[ticker]:
 			qtd += py_dict[ticker][key].get('quantity', 0.0)
-		print(ticker + '\t' + str(qtd))
+		value = qtd * price
+		print("{:<15}{:<15}{:<15}".format(ticker, str(qtd), "%.2f" % price) + "%.2f" % value)
+		#print(ticker + '\t' + str(qtd) + '\t' + "%.2f" % price + '\t' + "%.2f" % value)
 	
 	if not_found_list:
 		print("")
