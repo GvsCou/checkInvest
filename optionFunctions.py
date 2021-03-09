@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 import os, sys, json, configparser, fnmatch
-import setup
+import configOptions
 from scriptsOpt import entry, dataSet, listModes
 
 
@@ -9,7 +9,7 @@ from scriptsOpt import entry, dataSet, listModes
 
 def add_entry():
 	ticker: str = input("Enter asset name: ")
-	path: str = setup.dict_from_parser()['DATA_SET']['current']
+	path: str = configOptions.dict_from_parser()['DATA_SET']['current']
 	if os.stat(path).st_size == 0:
 		entry.add_new(ticker, entry.DICT_MODES.BRAND_NEW)
 	else:
@@ -24,7 +24,7 @@ def add_entry():
 
 
 def list_entries():
-	path: str = setup.dict_from_parser()['DATA_SET']['current']
+	path: str = configOptions.dict_from_parser()['DATA_SET']['current']
 	args: list = [] if len(sys.argv) < 3 else [foo for foo in sys.argv[2:] if not fnmatch.fnmatch(foo, 'as=?*')]
 	possible_modes: list = fnmatch.filter(sys.argv, 'as=?*')
 
@@ -42,8 +42,8 @@ def list_entries():
 
 
 def data_base():
-	data_sets_paths: str = setup.dict_from_parser()['PATHS']['data_sets_file']
-	data_sets_dir: str = setup.dict_from_parser()['PATHS']['data_sets_dir']
+	data_sets_paths: str = configOptions.dict_from_parser()['PATHS']['data_sets_file']
+	data_sets_dir: str = configOptions.dict_from_parser()['PATHS']['data_sets_dir']
 	all_data_sets: dict = entry.get_json(data_sets_paths)
 	
 	
@@ -88,7 +88,7 @@ def data_base():
 					return None
 
 def list_data_sets():
-	path: str = setup.dict_from_parser()['PATHS']['data_sets_file']
+	path: str = configOptions.dict_from_parser()['PATHS']['data_sets_file']
 	if os.stat(path).st_size == 0:
 		print("There are no data sets")
 	else:
@@ -104,7 +104,7 @@ def remove_data_base():
 	if len (sys.argv) < 3:
 		print("No data set given")
 		return None
-	data_sets_paths: str = setup.dict_from_parser()['PATHS']['data_sets_file']
+	data_sets_paths: str = configOptions.dict_from_parser()['PATHS']['data_sets_file']
 	alias: str = sys.argv[2]
 	file_path: str = ""
 	all_data_sets: dict = entry.get_json(data_sets_paths)
