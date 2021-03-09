@@ -7,6 +7,7 @@ def table_mode(tickers: list):
 	py_dict: dict = entry.get_json(path)
 	found: bool = True
 	not_found_list: list = []
+	currency: str = configOptions.dict_from_parser()['SETUP']['base_currency']
 	
 	if tickers:
 		found = False
@@ -23,7 +24,7 @@ def table_mode(tickers: list):
 			continue 
 		qtd: float = 0.0
 		price: float = 0.0 if ticker not in cryptonator.get_available_currencies() \
-		else cryptonator.get_exchange_rate(ticker.lower(), 'usd')
+		else cryptonator.get_exchange_rate(ticker.lower(), currency.lower())
 		value: float = 0.0
 		for key in py_dict[ticker]:
 			qtd += py_dict[ticker][key].get('quantity', 0.0)
