@@ -1,9 +1,9 @@
 import configparser
 from . import entry
-import setup
+import configOptions
 
 def get_existing_aliases() -> list:
-	data_sets: dict = entry.get_json(setup.dict_from_parser()['PATHS']['data_sets_file'])
+	data_sets: dict = entry.get_json(configOptions.dict_from_parser()['PATHS']['data_sets_file'])
 	aliases: list = []
 	for key in data_sets:
 		for key2 in data_sets[key]:
@@ -13,7 +13,7 @@ def get_existing_aliases() -> list:
 
 
 def get_path(alias: str) -> str:
-	data_sets: dict = entry.get_json(setup.dict_from_parser()['PATHS']['data_sets_file'])
+	data_sets: dict = entry.get_json(configOptions.dict_from_parser()['PATHS']['data_sets_file'])
 	path: str = ""
 	for key in data_sets:
 		for key2 in data_sets[key]:
@@ -27,9 +27,9 @@ def get_path(alias: str) -> str:
 def config_set_current(path: str):
 	
 	parser: configparser = configparser.ConfigParser()
-	parser.read(setup.dict_from_parser()['PATHS']['config_file'])
+	parser.read(configOptions.dict_from_parser()['PATHS']['config_file'])
 	parser.set('DATA_SET', 'current', path)
-	config_file: file = open(setup.dict_from_parser()['PATHS']['config_file'], 'w')
+	config_file: file = open(configOptions.dict_from_parser()['PATHS']['config_file'], 'w')
 	parser.write(config_file)
 	config_file.close()
 
@@ -38,7 +38,7 @@ def change_current(new_current: str):
 		#change .config
 		path: str = get_path(new_current)	
 		config_set_current(path)
-		data_sets_paths: str = setup.dict_from_parser()['PATHS']['data_sets_file']
+		data_sets_paths: str = configOptions.dict_from_parser()['PATHS']['data_sets_file']
 		#change data_sets
 		py_dict: dict = entry.get_json(data_sets_paths)
 		for key in list(py_dict):

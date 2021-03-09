@@ -1,9 +1,9 @@
 import sys, json
-import setup, cryptonator
+import configOptions, cryptonator
 from . import entry
 
 def table_mode(tickers: list):
-	path: str = setup.dict_from_parser()['DATA_SET']['current']
+	path: str = configOptions.dict_from_parser()['DATA_SET']['current']
 	py_dict: dict = entry.get_json(path)
 	found: bool = True
 	not_found_list: list = []
@@ -38,7 +38,7 @@ def table_mode(tickers: list):
 		
 
 def json_mode(tickers: list):
-	path: str = setup.dict_from_parser()['DATA_SET']['current']
+	path: str = configOptions.dict_from_parser()['DATA_SET']['current']
 	py_dict: dict = entry.get_json(path)
 	not_found_list: list = []
 

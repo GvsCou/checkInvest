@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 import sys
-import setup, optionFunctions
+import configOptions, optionFunctions
 
 
 def switch(option: str):
@@ -29,5 +29,5 @@ def check_option():
 	else:
 		print("Unrecognized Option")
 
-setup.check_base_files()
+configOptions.check_base_files()
 check_option()
