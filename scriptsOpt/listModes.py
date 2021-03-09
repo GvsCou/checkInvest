@@ -10,8 +10,6 @@ def table_mode(tickers: list):
 	currency: str = configOptions.dict_from_parser()['SETUP']['base_currency']
 	grapheme: str = "$" if currency not in entry.get_json("currency-format.json") \
 	else entry.get_json("currency-format.json")[currency]['symbol'].get('grapheme', "$")
-	print(grapheme)
-	exit()
 	
 	if tickers:
 		found = False
@@ -33,8 +31,8 @@ def table_mode(tickers: list):
 		for key in py_dict[ticker]:
 			qtd += py_dict[ticker][key].get('quantity', 0.0)
 		value = qtd * price
-		print("{:<15}{:<15}{:<15}".format(ticker, str(qtd), "U$ %.2f" % price) + "U$ %.2f" % value)
-		#print(ticker + '\t' + str(qtd) + '\t' + "%.2f" % price + '\t' + "%.2f" % value)
+		print("{:<15}{:<15}{:<15}".format(ticker, str(qtd), "{} ".format(grapheme) + "%.2f" %  price) \
+		+ "{} ".format(grapheme) + "%.2f" % value)
 	
 	if not_found_list:
 		print("")
