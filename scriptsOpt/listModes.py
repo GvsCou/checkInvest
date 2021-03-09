@@ -8,6 +8,10 @@ def table_mode(tickers: list):
 	found: bool = True
 	not_found_list: list = []
 	currency: str = configOptions.dict_from_parser()['SETUP']['base_currency']
+	grapheme: str = "$" if currency not in entry.get_json("currency-format.json") \
+	else entry.get_json("currency-format.json")[currency]['symbol'].get('grapheme', "$")
+	print(grapheme)
+	exit()
 	
 	if tickers:
 		found = False
