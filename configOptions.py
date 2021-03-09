@@ -47,7 +47,7 @@ def check_base_files():
 		setup_archives['config_file'].write(\
 		"[SETUP]" + "\n" \
 		"INITIAL_SETUP_DONE = true" + '\n' \
-		"BASE_CURRENCY = usd" + '\n' \
+		"BASE_CURRENCY = USD" + '\n' \
 		"" + '\n' \
 		"[PATHS]" + '\n' \
 		"SETUP_DIR =" + setup_archives['dir'] + '\n' \
