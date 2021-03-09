@@ -28,7 +28,7 @@ def table_mode(tickers: list):
 		for key in py_dict[ticker]:
 			qtd += py_dict[ticker][key].get('quantity', 0.0)
 		value = qtd * price
-		print("{:<15}{:<15}{:<15}".format(ticker, str(qtd), "%.2f" % price) + "%.2f" % value)
+		print("{:<15}{:<15}{:<15}".format(ticker, str(qtd), "U$ %.2f" % price) + "U$ %.2f" % value)
 		#print(ticker + '\t' + str(qtd) + '\t' + "%.2f" % price + '\t' + "%.2f" % value)
 	
 	if not_found_list:
