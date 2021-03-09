@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
-import sys
+import sys 
+from fnmatch import fnmatch
 import configOptions, optionFunctions
 
 
@@ -18,7 +19,7 @@ def switch(option: str):
 
 
 def one_hifen(option: str):
-	if option[0] == "-" and len(option) > 1 and option[1] != "-":
+	if fnmatch(option, '-[!-]*'):
 		switch(option[1:])
 	else:
 		print("Invalid Option")
@@ -27,7 +28,7 @@ def check_option():
 	if len(sys.argv) > 1:
 		one_hifen(sys.argv[1])
 	else:
-		print("Unrecognized Option")
+		print("No option given")
 
 configOptions.check_base_files()
 check_option()
