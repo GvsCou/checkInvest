@@ -8,4 +8,8 @@ A command line tool (CTL) through which one is able to keep track of one's inves
 
 ### cryptonator (available at: https://github.com/aldur/cryptonator and https://pypi.org/project/cryptonator/)
 
-A python wrapper for Cryptonator's api (available at: https://www.cryptonator.com/api/), made by aldur (https://github.com/aldur).
+A python wrapper for Cryptonator's api (available at: https://www.cryptonator.com/api/). User: aldur (https://github.com/aldur).
+
+### currency-format (available at: https://github.com/xsolla/currency-format)
+
+As says its README.md: "JSON with information about currencies: codes (ISO 4217), the names, grapheme (symbols), fraction and formatting." User: xsolla (https://github.com/xsolla).
