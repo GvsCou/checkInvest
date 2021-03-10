@@ -110,8 +110,8 @@ def remove_data_base():
 	all_data_sets: dict = entry.get_json(data_sets_paths)
 	
 	if alias == "Default":
-		print("You can neither delete 'Default' nor have zero data sets")
-		return None
+		clean_data_base()
+		print("'Default' is never deleted, only cleaned")
 	else:
 		for key in list(all_data_sets):
 			for key2 in list(all_data_sets[key]):
