@@ -2,7 +2,7 @@
 
 import os, sys, json, configparser, fnmatch
 import configOptions
-from scriptsOpt import entry, dataSet, listModes
+from subFunctions import entry, dataSet, listModes
 
 
 
