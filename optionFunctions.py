@@ -127,6 +127,23 @@ def remove_data_base():
 					return None
 						
 		print("'" + alias + "' not found")
+
+def clean_data_base():
+	data_sets_file_path: str = configOptions.dict_from_parser()['PATHS']['data_sets_file']
+	data_sets_dict: dict = entry.get_json(data_sets_file_path)
+	
+	if len(sys.argv) < 3:
+		print("No data set specified")
+	else:
+		for alias in sys.argv[2:]:
+			for key in data_sets_dict:
+				for key2 in data_sets_dict[key]:
+					if data_sets_dict[key][key2].get('alias', "") == alias:	
+						data_set: file = open(data_sets_dict[key][key2]['path'], 'w')
+						data_set.truncate(0)
+						data_set.close()
+
+
 def default():
 	print("Invalid Option")
 

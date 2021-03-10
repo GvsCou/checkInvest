@@ -12,7 +12,8 @@ def switch(option: str):
 		'le': optionFunctions.list_entries,
 		'd': optionFunctions.data_base,
 		'ld': optionFunctions.list_data_sets,
-		'rd': optionFunctions.remove_data_base
+		'rd': optionFunctions.remove_data_base,
+		'cd': optionFunctions.clean_data_base
 	}
 
 	cases.get(option, optionFunctions.default)()
