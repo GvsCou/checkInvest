@@ -4,7 +4,7 @@ import os, sys, json, configparser, fnmatch, enum, datetime
 import configOptions
 from cryptonator import get_available_currencies, get_exchange_rate
 from  yahooquery import Ticker
-from subFunctions import dataSet, listModes
+from subFunctions import dataSet 
 
 
 class JsonHandler:
@@ -187,6 +187,11 @@ class Entry:
 			for ticker in not_found_list:
 				print(ticker + " not found")
 
+	def json_mode(self, tickers: list):
+		path: str = configOptions.dict_from_parser()['DATA_SET']['current']
+		py_dict: dict = self.json_handler.get_json(path)
+		not_found_list: list = []
+		print(json.dumps(py_dict, indent=2, sort_keys=True))
 
 	def list_entries(self):
 		"""Lists the entries of the current data set"""
@@ -197,7 +202,7 @@ class Entry:
 	
 		def switch_list(option: str, tickers: list):
 			cases: dict = {
-				'json': listModes.json_mode
+				'json': self.json_mode
 			}
 			cases.get(option, self.table_mode)(tickers)
 	
