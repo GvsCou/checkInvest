@@ -8,8 +8,8 @@ import configOptions, optionFunctions
 def switch(option: str):
 
 	cases: dict = {
-		'a': optionFunctions.add_entry,
-		'le': optionFunctions.list_entries,
+		'a': optionFunctions.Entry().add_entry,
+		'le': optionFunctions.Entry().list_entries,
 		'd': optionFunctions.data_base,
 		'ld': optionFunctions.list_data_sets,
 		'rd': optionFunctions.remove_data_base,
