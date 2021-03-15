@@ -131,7 +131,7 @@ class Entry:
 			
 			self.add_new(ticker)
 ########Listing entries###################################################################################################
-	def table_mode(self, tickers: list) -> str:
+	def table_mode(self, tickers: list) -> None:
 		def get_non_crypto(ticker, base_currency):
 			asset: Ticker = Ticker(ticker)
 			#Appends '.sa' if the stock is brazillian
@@ -151,12 +151,12 @@ class Entry:
 
 
 		path: str = configOptions.dict_from_parser()['DATA_SET']['current']
-		py_dict: dict = entry.get_json(path)
+		py_dict: dict = self.json_handler.get_json(path)
 		found: bool = True
 		not_found_list: list = []
 		currency: str = configOptions.dict_from_parser()['SETUP']['base_currency']
-		grapheme: str = "$" if currency not in entry.get_json("currency-format.json") \
-		else entry.get_json("currency-format.json")[currency]['symbol'].get('grapheme', "$")
+		grapheme: str = "$" if currency not in self.json_handler.get_json("currency-format.json") \
+		else self.json_handler.get_json("currency-format.json")[currency]['symbol'].get('grapheme', "$")
 	
 		if tickers:
 			found = False
