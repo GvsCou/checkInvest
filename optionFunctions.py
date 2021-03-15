@@ -2,13 +2,15 @@
 
 import os, sys, json, configparser, fnmatch, enum, datetime
 import configOptions
-from subFunctions import entry, dataSet, listModes
+from subFunctions import dataSet, listModes
 
 
 class JsonHandler:
 	"""Simple class that handles getting a dict from a .json and outputting a dict to a .json """
 
 	def get_json(self, path: str) -> dict:
+		"""Returns a dict from a .json"""
+
 		r_file: file = open(path, 'r')
 		py_dict: dict = json.load(r_file)
 		r_file.close()
@@ -16,14 +18,16 @@ class JsonHandler:
 		
 
 	def dump_json(self, path: str, py_dict: dict, indentation: int=2):
+		"""Outputs a .json"""
+
 		w_file: file = open(path, 'w')
 		json.dump(py_dict, w_file, indent=indentation)
 
 class Entry:
 	"""Class responsible for adding, listing and removing entries"""
 
-	def __init__(self, json_funcs=JsonHandler()):
-		self.json_handler = json_funcs
+	def __init__(self, jh=JsonHandler()):
+		self.json_handler = jh
 
 	class DICT_MODES(enum.Enum):
 		OLD = 0
@@ -31,6 +35,9 @@ class Entry:
 		BRAND_NEW = 2
 
 	def new_dict(self, mode: int, price: float, quantity: float, ticker: str="") -> dict:
+		"""Returns a dict to an empty .json (DICT_MODES.BRAND_NEW) and to non empty ones by adding either a new
+		key (DICT_MODES.NEW and ticker != "") or appending to an existing one (DICT_MODES.OLD and ticker = "")"""
+
 		c_dict: dict = {}
 	
 		if mode == self.DICT_MODES.OLD:
@@ -63,7 +70,10 @@ class Entry:
 		return c_dict
 
 
-	def add_new(self, ticker: str, mode: int=DICT_MODES.NEW):
+	def add_new(self, ticker: str, mode: int=DICT_MODES.NEW) -> None:
+		"""Void private function that outputs to either an empty (DICT_MODES.BRAND_NEW) or
+		to a non empty (DICT_MODES.NEW) .json"""
+
 		price: float = float(input("Enter the price of the asset: "))
 		quantity: float = float(input("Enter the quantity of the asset: "))
 		path: str = configOptions.dict_from_parser()['DATA_SET']['current']
@@ -78,7 +88,9 @@ class Entry:
 			new_entry: dict = self.new_dict(mode, price, quantity, ticker)
 			self.json_handler.dump_json(path, new_entry)
 
-	def add_to_old(self, ticker: str):
+	def add_to_old(self, ticker: str) -> None:
+		"""Void private function that outputs to an non empty .json that already has the key (ticker)"""
+
 		price: float = float(input("Enter the price of the asset: "))
 		quantity: float = float(input("Enter the quantity of the asset: "))
 		path: str = configOptions.dict_from_parser()['DATA_SET']['current']
@@ -95,7 +107,13 @@ class Entry:
 	
 
 	def add_entry(self):
-		"""Adds a new entry to the current data set"""
+		"""Adds a new entry to the current data set by defining if the output .json is either 
+		empty (DICT_MODES.BRAND_NEW), not empty, but without the given key (ticker), or not empty
+		with the given key.
+
+		Then it selects between add_to_old(self, ticker: str) and add_new(self, ticker: str,
+		mode: int=DICT_MODES.NEW)"""
+
 		ticker: str = input("Enter asset name: ")
 		path: str = configOptions.dict_from_parser()['DATA_SET']['current']
 		if os.stat(path).st_size == 0:
@@ -134,7 +152,7 @@ class Entry:
 def data_base():
 	data_sets_paths: str = configOptions.dict_from_parser()['PATHS']['data_sets_file']
 	data_sets_dir: str = configOptions.dict_from_parser()['PATHS']['data_sets_dir']
-	all_data_sets: dict = entry.get_json(data_sets_paths)
+	all_data_sets: dict = JsonHandler().get_json(data_sets_paths)
 	
 	
 	def add_new(alias: str):
@@ -152,7 +170,7 @@ def data_base():
 						'path': data_sets_dir + "dataSet" + str(i + 1) + ".json"
 		}
 		
-		entry.dump_json(data_sets_paths, py_dict)
+		JsonHandler().dump_json(data_sets_paths, py_dict)
 		new_data_file: file = open(py_dict['data_sets']['data_set_' + str(i + 1)]['path'], 'w')
 		new_data_file.close()
 		dataSet.config_set_current(py_dict['data_sets']['data_set_' + str(i + 1)]['path'])
@@ -182,7 +200,7 @@ def list_data_sets():
 	if os.stat(path).st_size == 0:
 		print("There are no data sets")
 	else:
-		py_dict: dict = entry.get_json(path)
+		py_dict: dict = JsonHandler().get_json(path)
 		aliases: list = []
 		for key in py_dict:
 			for key2 in py_dict[key]:
@@ -197,7 +215,7 @@ def remove_data_base():
 	data_sets_paths: str = configOptions.dict_from_parser()['PATHS']['data_sets_file']
 	alias: str = sys.argv[2]
 	file_path: str = ""
-	all_data_sets: dict = entry.get_json(data_sets_paths)
+	all_data_sets: dict = JsonHandler().get_json(data_sets_paths)
 	
 	if alias == "Default":
 		clean_data_base()
@@ -210,9 +228,9 @@ def remove_data_base():
 					os.remove(file_path)
 					if all_data_sets[key][key2].get('current', False): 
 						dataSet.change_current('Default')
-					new_set_dict: dict = entry.get_json(data_sets_paths)
+					new_set_dict: dict = JsonHandler().get_json(data_sets_paths)
 					del new_set_dict[key][key2]
-					entry.dump_json(data_sets_paths, new_set_dict)
+					JsonHandler().dump_json(data_sets_paths, new_set_dict)
 					print(alias + " deleted")
 					return None
 						
@@ -220,7 +238,7 @@ def remove_data_base():
 
 def clean_data_base():
 	data_sets_file_path: str = configOptions.dict_from_parser()['PATHS']['data_sets_file']
-	data_sets_dict: dict = entry.get_json(data_sets_file_path)
+	data_sets_dict: dict = JsonHandler().get_json(data_sets_file_path)
 	
 	if len(sys.argv) < 3:
 		print("No data set specified")
