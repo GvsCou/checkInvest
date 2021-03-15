@@ -24,7 +24,7 @@ class JsonHandler:
 
 		w_file: file = open(path, 'w')
 		json.dump(py_dict, w_file, indent=indentation)
-
+##########################################################################################################################
 class Entry:
 	"""Class responsible for adding, listing and removing entries"""
 
@@ -132,7 +132,12 @@ class Entry:
 			self.add_new(ticker)
 ########Listing entries###################################################################################################
 	def table_mode(self, tickers: list) -> None:
+		"""This functions is responsible for fetching the price of assests and for displaying the latter"""
+
 		def get_non_crypto(ticker, base_currency):
+			"""This functions uses the 'yahooquery' module, when 'ticker' is not in 
+			get_available_currencies()"""
+
 			asset: Ticker = Ticker(ticker)
 			#Appends '.sa' if the stock is brazillian
 			if "Quote not found for ticker symbol: {}".format(ticker.upper()) in asset.price[ticker]:
@@ -188,13 +193,17 @@ class Entry:
 				print(ticker + " not found")
 
 	def json_mode(self, tickers: list):
+		"""Prints the complete data set in json format"""
+
 		path: str = configOptions.dict_from_parser()['DATA_SET']['current']
 		py_dict: dict = self.json_handler.get_json(path)
 		not_found_list: list = []
 		print(json.dumps(py_dict, indent=2, sort_keys=True))
 
 	def list_entries(self):
-		"""Lists the entries of the current data set"""
+		"""Lists the entries of the current data set as a table (table_mode()) or as the other supported
+		formats:
+		1) json(json_mode())"""
 		path: str = configOptions.dict_from_parser()['DATA_SET']['current']
 		args: list = [] if len(sys.argv) < 3 \
 		else [foo for foo in sys.argv[2:] if not fnmatch.fnmatch(foo, 'as=?*')]
@@ -211,6 +220,7 @@ class Entry:
 		else:
 			mode: str = possible_modes.pop(-1)[3:] if len(possible_modes) > 0 else ""
 			switch_list(mode, args)
+##########################################################################################################################
 
 
 def data_base():
