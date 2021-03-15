@@ -2,6 +2,8 @@
 
 import os, sys, json, configparser, fnmatch, enum, datetime
 import configOptions
+from cryptonator import get_available_currencies, get_exchange_rate
+from  yahooquery import Ticker
 from subFunctions import dataSet, listModes
 
 
@@ -28,7 +30,8 @@ class Entry:
 
 	def __init__(self, jh=JsonHandler()):
 		self.json_handler = jh
-
+	
+########Adding Entries####################################################################################################
 	class DICT_MODES(enum.Enum):
 		OLD = 0
 		NEW = 1
@@ -80,9 +83,9 @@ class Entry:
 
 		if mode == self.DICT_MODES.NEW:
 			new_entry: dict = self.new_dict(mode, price, quantity)
-			old_entry: dict = json_handler.get_json(path)	
+			old_entry: dict = self.json_handler.get_json(path)	
 			old_entry[ticker] = new_entry
-			json_handler.dump_json(path, old_entry)
+			self.json_handler.dump_json(path, old_entry)
 	
 		elif mode == self.DICT_MODES.BRAND_NEW:
 			new_entry: dict = self.new_dict(mode, price, quantity, ticker)
@@ -94,7 +97,7 @@ class Entry:
 		price: float = float(input("Enter the price of the asset: "))
 		quantity: float = float(input("Enter the quantity of the asset: "))
 		path: str = configOptions.dict_from_parser()['DATA_SET']['current']
-		old_entry: dict = json_handler.get_json(path)
+		old_entry: dict = self.json_handler.get_json(path)
 		
 		i: int = 0 
 		for key in old_entry[ticker]:
@@ -103,7 +106,7 @@ class Entry:
 	
 		old_entry[ticker]['entry_' + str(i + 1)] = self.new_dict(self.DICT_MODES.OLD, price, quantity)
 	
-		json_handler.dump_json(path, old_entry)
+		self.json_handler.dump_json(path, old_entry)
 	
 
 	def add_entry(self):
@@ -119,7 +122,7 @@ class Entry:
 		if os.stat(path).st_size == 0:
 			self.add_new(ticker, self.DICT_MODES.BRAND_NEW)
 		else:
-			py_dict: dict = json_handler.get_json(path)
+			py_dict: dict = self.json_handler.get_json(path)
 		
 			for key in py_dict:
 				if key == ticker:
@@ -127,6 +130,62 @@ class Entry:
 					return None
 			
 			self.add_new(ticker)
+########Listing entries###################################################################################################
+	def table_mode(self, tickers: list) -> str:
+		def get_non_crypto(ticker, base_currency):
+			asset: Ticker = Ticker(ticker)
+			#Appends '.sa' if the stock is brazillian
+			if "Quote not found for ticker symbol: {}".format(ticker.upper()) in asset.price[ticker]:
+				ticker += ".sa"
+				asset = Ticker(ticker)		
+	
+			given_currency: str = asset.price[ticker].get('currency', "")
+			if given_currency != base_currency:
+				asset_price: float = 0.0  if given_currency not in get_available_currencies() \
+				else get_exchange_rate(given_currency.lower(), currency.lower()) * \
+				asset.price[ticker].get('regularMarketPrice', 0.0)
+			else:
+				asset_price: float = asset.price[ticker].get('regularMarketPrice', 0.0)
+	
+			return asset_price
+
+
+		path: str = configOptions.dict_from_parser()['DATA_SET']['current']
+		py_dict: dict = entry.get_json(path)
+		found: bool = True
+		not_found_list: list = []
+		currency: str = configOptions.dict_from_parser()['SETUP']['base_currency']
+		grapheme: str = "$" if currency not in entry.get_json("currency-format.json") \
+		else entry.get_json("currency-format.json")[currency]['symbol'].get('grapheme', "$")
+	
+		if tickers:
+			found = False
+			for ticker in tickers:
+				if ticker not in py_dict:
+					not_found_list.append(ticker)
+				else:
+					found = True
+		if found:
+			print("{:.<15}{:.<15}{:.<15}Value".format("Ticker","Quantity", "Price"))
+
+		for ticker in py_dict:
+			if tickers and ticker not in tickers:
+				continue 
+			qtd: float = 0.0
+			price: float = float(get_non_crypto(ticker, currency)) \
+	 		if ticker not in get_available_currencies() \
+			else get_exchange_rate(ticker.lower(), currency.lower())
+			value: float = 0.0
+			for key in py_dict[ticker]:
+				qtd += py_dict[ticker][key].get('quantity', 0.0)
+			value = qtd * price
+			print("{:<15}{:<15}{:<15}".format(ticker, str(qtd), "{} ".format(grapheme) + "%.2f" %  price) \
+			+ "{} ".format(grapheme) + "%.2f" % value)
+	
+		if not_found_list:
+			print("")
+			for ticker in not_found_list:
+				print(ticker + " not found")
 
 
 	def list_entries(self):
@@ -140,7 +199,7 @@ class Entry:
 			cases: dict = {
 				'json': listModes.json_mode
 			}
-			cases.get(option, listModes.table_mode)(tickers)
+			cases.get(option, self.table_mode)(tickers)
 	
 		if os.stat(path).st_size == 0:
 			print("There are no entries in the data file")
