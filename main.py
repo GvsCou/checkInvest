@@ -10,10 +10,10 @@ def switch(option: str):
 	cases: dict = {
 		'a': optionFunctions.Entry().add_entry,
 		'le': optionFunctions.Entry().list_entries,
-		'd': optionFunctions.data_base,
-		'ld': optionFunctions.list_data_sets,
-		'rd': optionFunctions.remove_data_base,
-		'cd': optionFunctions.clean_data_base
+		'ad': optionFunctions.DataSet().add_new
+		#'ld': optionFunctions.list_data_sets,
+		#'rd': optionFunctions.remove_data_base,
+		#'cd': optionFunctions.clean_data_base
 	}
 
 	cases.get(option, optionFunctions.default)()

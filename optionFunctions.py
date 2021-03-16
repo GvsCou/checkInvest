@@ -3,7 +3,7 @@
 import os, sys, json, configparser, fnmatch, enum, datetime
 import configOptions
 from cryptonator import get_available_currencies, get_exchange_rate
-from  yahooquery import Ticker
+from yahooquery import Ticker
 from subFunctions import dataSet 
 
 
@@ -222,15 +222,21 @@ class Entry:
 			switch_list(mode, args)
 ##########################################################################################################################
 
+class DataSet:
+	"""Class responsible for data set operations, like adding, deleting and clearing"""
+	
+	def __init__(self):
+		self.dss_paths: str = configOptions.dict_from_parser()['PATHS']['data_sets_file']
+		self.dss_dir_path: str = configOptions.dict_from_parser()['PATHS']['data_sets_dir']
+		self.all_dss: dict = JsonHandler().get_json(self.dss_paths)
 
-def data_base():
-	data_sets_paths: str = configOptions.dict_from_parser()['PATHS']['data_sets_file']
-	data_sets_dir: str = configOptions.dict_from_parser()['PATHS']['data_sets_dir']
-	all_data_sets: dict = JsonHandler().get_json(data_sets_paths)
-	
-	
-	def add_new(alias: str):
-		py_dict: dict = all_data_sets
+
+	def add_new(self):
+		if len(sys.argv) < 3:
+			print("No alias given")
+			return None
+		alias: str = sys.argv[2:].pop(-1)
+		py_dict: dict = self.all_dss
 		i: int = 0
 		for key in list(py_dict):
 			for key2 in list(py_dict[key]):
@@ -241,89 +247,91 @@ def data_base():
 		py_dict['data_sets']['data_set_' + str(i + 1)] = {
 						'alias': alias,
 						'current': True,
-						'path': data_sets_dir + "dataSet" + str(i + 1) + ".json"
+						'path': self.dss_dir_path + "dataSet" + str(i + 1) + ".json"
 		}
 		
-		JsonHandler().dump_json(data_sets_paths, py_dict)
+		JsonHandler().dump_json(self.dss_paths, py_dict)
 		new_data_file: file = open(py_dict['data_sets']['data_set_' + str(i + 1)]['path'], 'w')
 		new_data_file.close()
 		dataSet.config_set_current(py_dict['data_sets']['data_set_' + str(i + 1)]['path'])
 		print(alias + " was created and is now the new current data set")
 
 		
-
-	if len(sys.argv) > 2:
-		aliases: list = dataSet.get_existing_aliases()
-		args: list = sys.argv
-		del args[0:2]
-		for arg in args:
-			if arg in aliases:
-				dataSet.change_current(arg)
-			else:
-				add_new(arg)
+	def change_current(self) -> None:
+		if len(sys.argv) > 2:
+			aliases: list = dataSet.get_existing_aliases()
+			args: list = sys.argv
+			del args[0:2]
+			for arg in args:
+				if arg in aliases:
+					dataSet.change_current(arg)
+					return None
+				else:
+					print("No {} found".format(arg))
+		else:
+			print("No alias given")
+			return None
 					
-	else: #show current data set
-		for key in all_data_sets:
-			for key2 in all_data_sets[key]:
-				if all_data_sets[key][key2].get('current', False):
-					print("Current data set: " + all_data_sets[key][key2].get('alias', "Not Found"))
+	def show_current(self) -> None:
+		for key in self.all_dss:
+			for key2 in self.all_dss[key]:
+				if self.all_dss[key][key2].get('current', False):
+					print("Current data set: " + self.all_dss[key][key2].get('alias', "Not Found"))
 					return None
 
-def list_data_sets():
-	path: str = configOptions.dict_from_parser()['PATHS']['data_sets_file']
-	if os.stat(path).st_size == 0:
-		print("There are no data sets")
-	else:
-		py_dict: dict = JsonHandler().get_json(path)
-		aliases: list = []
-		for key in py_dict:
-			for key2 in py_dict[key]:
-				aliases.append(py_dict[key][key2].get('alias'))
-		for i in range(0, len(aliases), 1):
-			print(str(i) + ": " + aliases[i]) 
+	def list_data_sets():
+		path: str = configOptions.dict_from_parser()['PATHS']['data_sets_file']
+		if os.stat(path).st_size == 0:
+			print("There are no data sets")
+		else:
+			py_dict: dict = JsonHandler().get_json(path)
+			aliases: list = []
+			for key in py_dict:
+				for key2 in py_dict[key]:
+					aliases.append(py_dict[key][key2].get('alias'))
+			for i in range(0, len(aliases), 1):
+				print(str(i) + ": " + aliases[i]) 
 
-def remove_data_base():
-	if len (sys.argv) < 3:
-		print("No data set given")
-		return None
-	data_sets_paths: str = configOptions.dict_from_parser()['PATHS']['data_sets_file']
-	alias: str = sys.argv[2]
-	file_path: str = ""
-	all_data_sets: dict = JsonHandler().get_json(data_sets_paths)
-	
-	if alias == "Default":
-		clean_data_base()
-		print("'Default' is never deleted, only cleaned")
-	else:
-		for key in list(all_data_sets):
-			for key2 in list(all_data_sets[key]):
-				if alias == all_data_sets[key][key2].get('alias', ""):
-					file_path = all_data_sets[key][key2]['path']
-					os.remove(file_path)
-					if all_data_sets[key][key2].get('current', False): 
-						dataSet.change_current('Default')
-					new_set_dict: dict = JsonHandler().get_json(data_sets_paths)
-					del new_set_dict[key][key2]
-					JsonHandler().dump_json(data_sets_paths, new_set_dict)
-					print(alias + " deleted")
-					return None
-						
-		print("'" + alias + "' not found")
+	def remove_data_base():
+		if len (sys.argv) < 3:
+			print("No data set given")
+			return None
+		alias: str = sys.argv[2]
+		file_path: str = ""
+		
+		if alias == "Default":
+			clean_data_base()
+			print("'Default' is never deleted, only cleaned")
+		else:
+			for key in list(self.all_dss):
+				for key2 in list(self.all_dss[key]):
+					if alias == self.all_dss[key][key2].get('alias', ""):
+						file_path = self.all_dss[key][key2]['path']
+						os.remove(file_path)
+						if self.all_dss[key][key2].get('current', False): 
+							dataSet.change_current('Default')
+						new_set_dict: dict = JsonHandler().get_json(self.dss_paths)
+						del new_set_dict[key][key2]
+						JsonHandler().dump_json(self.dss_paths, new_set_dict)
+						print(alias + " deleted")
+						return None
+							
+			print("'" + alias + "' not found")
 
-def clean_data_base():
-	data_sets_file_path: str = configOptions.dict_from_parser()['PATHS']['data_sets_file']
-	data_sets_dict: dict = JsonHandler().get_json(data_sets_file_path)
-	
-	if len(sys.argv) < 3:
-		print("No data set specified")
-	else:
-		for alias in sys.argv[2:]:
-			for key in data_sets_dict:
-				for key2 in data_sets_dict[key]:
-					if data_sets_dict[key][key2].get('alias', "") == alias:	
-						data_set: file = open(data_sets_dict[key][key2]['path'], 'w')
-						data_set.truncate(0)
-						data_set.close()
+	def clean_data_base():
+		data_sets_file_path: str = configOptions.dict_from_parser()['PATHS']['data_sets_file']
+		data_sets_dict: dict = JsonHandler().get_json(data_sets_file_path)
+		
+		if len(sys.argv) < 3:
+			print("No data set specified")
+		else:
+			for alias in sys.argv[2:]:
+				for key in data_sets_dict:
+					for key2 in data_sets_dict[key]:
+						if data_sets_dict[key][key2].get('alias', "") == alias:	
+							data_set: file = open(data_sets_dict[key][key2]['path'], 'w')
+							data_set.truncate(0)
+							data_set.close()
 
 
 def default():
