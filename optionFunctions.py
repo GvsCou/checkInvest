@@ -4,7 +4,6 @@ import os, sys, json, configparser, fnmatch, enum, datetime
 import configOptions
 from cryptonator import get_available_currencies, get_exchange_rate
 from yahooquery import Ticker
-from subFunctions import dataSet 
 
 
 class JsonHandler:
@@ -24,14 +23,15 @@ class JsonHandler:
 
 		w_file: file = open(path, 'w')
 		json.dump(py_dict, w_file, indent=indentation)
+
 ##########################################################################################################################
+
 class Entry:
 	"""Class responsible for adding, listing and removing entries"""
 
 	def __init__(self, jh=JsonHandler()):
 		self.json_handler = jh
-	
-########Adding Entries####################################################################################################
+
 	class DICT_MODES(enum.Enum):
 		OLD = 0
 		NEW = 1
@@ -130,7 +130,7 @@ class Entry:
 					return None
 			
 			self.add_new(ticker)
-########Listing entries###################################################################################################
+
 	def table_mode(self, tickers: list) -> None:
 		"""This functions is responsible for fetching the price of assests and for displaying the latter"""
 
@@ -220,18 +220,71 @@ class Entry:
 		else:
 			mode: str = possible_modes.pop(-1)[3:] if len(possible_modes) > 0 else ""
 			switch_list(mode, args)
+
 ##########################################################################################################################
 
 class DataSet:
 	"""Class responsible for data set operations, like adding, deleting and clearing"""
 	
+	class __DataSetInner:
+		"""Inner Class that has some functions related to the upper class main ones"""
+
+		def __init__(self, adsp:str, ad: dict, js=JsonHandler()):
+			self.all_dss: dict = ad
+			self.dss_paths: str = adsp
+			self.json_handler = js
+		
+		def get_existing_aliases(self) -> list:
+			aliases: list = []
+			for key in self.all_dss:
+				for key2 in self.all_dss[key]:
+					aliases.append(self.all_dss[key][key2].get('alias', None))
+			return aliases
+
+		def get_path(self, alias: str) -> str:
+			path: str = ""
+			for key in self.all_dss:
+				for key2 in self.all_dss[key]:
+					if self.all_dss[key][key2].get('alias', "") == alias:
+						path = self.all_dss[key][key2].get('path', "")
+						break
+			return path
+
+		def config_set_current(self, path: str) -> None:
+			parser = configparser.ConfigParser()
+			parser.read(configOptions.dict_from_parser()['PATHS']['config_file'])
+			parser.set('DATA_SET', 'current', path)
+			config_file: file = open(configOptions.dict_from_parser()['PATHS']['config_file'], 'w')
+			parser.write(config_file)
+			config_file.close()
+			return None
+
+
+		def change_current(self, new_current: str) -> None:
+			#change .config
+			path: str = self.get_path(new_current)	
+			self.config_set_current(path)
+			#change data_sets
+			py_dict: dict = self.json_handler.get_json(self.dss_paths)
+			for key in list(py_dict):
+				for key2 in list(py_dict[key]):
+					if py_dict[key][key2].get('alias', "") == new_current:
+					 	py_dict[key][key2]['current'] = True
+					else:
+						py_dict[key][key2]['current'] = False
+			self.json_handler.dump_json(self.dss_paths, py_dict)
+			print("'" + new_current + "' is the new current data set")
+			return None
+		
 	def __init__(self):
 		self.dss_paths: str = configOptions.dict_from_parser()['PATHS']['data_sets_file']
 		self.dss_dir_path: str = configOptions.dict_from_parser()['PATHS']['data_sets_dir']
 		self.all_dss: dict = JsonHandler().get_json(self.dss_paths)
+		self.data_set_inner = self.__DataSetInner(self.dss_paths, self.all_dss)
 
 
 	def add_new(self):
+		"""Adds a new data set and sets it to be current"""
 		if len(sys.argv) < 3:
 			print("No alias given")
 			return None
@@ -253,20 +306,19 @@ class DataSet:
 		JsonHandler().dump_json(self.dss_paths, py_dict)
 		new_data_file: file = open(py_dict['data_sets']['data_set_' + str(i + 1)]['path'], 'w')
 		new_data_file.close()
-		dataSet.config_set_current(py_dict['data_sets']['data_set_' + str(i + 1)]['path'])
+		self.data_set_inner.config_set_current(py_dict['data_sets']['data_set_' + str(i + 1)]['path'])
 		print(alias + " was created and is now the new current data set")
 
 		
 	def change_current(self) -> None:
+		"""Just changes the current"""
 		if len(sys.argv) > 2:
-			aliases: list = dataSet.get_existing_aliases()
-			print(aliases)
+			aliases: list = self.data_set_inner.get_existing_aliases()
 			args: list = sys.argv
 			del args[0:2]
 			for arg in args:
 				if arg in aliases:
-					dataSet.change_current(arg)
-					print("{} is the new current".format(arg))
+					self.data_set_inner.change_current(arg)
 					return None
 				else:
 					print("No {} found".format(arg))
@@ -275,6 +327,7 @@ class DataSet:
 			return None
 					
 	def show_current(self) -> None:
+		"""Just shows the current"""
 		for key in self.all_dss:
 			for key2 in self.all_dss[key]:
 				if self.all_dss[key][key2].get('current', False):
@@ -282,6 +335,7 @@ class DataSet:
 					return None
 
 	def list_existing(self) -> None:
+		"""Lits all created data sets"""
 		path: str = configOptions.dict_from_parser()['PATHS']['data_sets_file']
 		if os.stat(path).st_size == 0:
 			print("There are no data sets")
@@ -296,6 +350,7 @@ class DataSet:
 		return None
 
 	def remove(self) -> None:
+		"""Deletes a data set"""
 		if len (sys.argv) < 3:
 			print("No data set given")
 			return None
@@ -312,7 +367,7 @@ class DataSet:
 						file_path = self.all_dss[key][key2]['path']
 						os.remove(file_path)
 						if self.all_dss[key][key2].get('current', False): 
-							dataSet.change_current('Default')
+							self.data_set_inner.change_current('Default')
 						new_set_dict: dict = JsonHandler().get_json(self.dss_paths)
 						del new_set_dict[key][key2]
 						JsonHandler().dump_json(self.dss_paths, new_set_dict)
@@ -323,6 +378,7 @@ class DataSet:
 		return None
 
 	def clean(self) -> None:
+		"""Remove all entries from a data set by truncating it with '0' as an argument"""
 		if len(sys.argv) < 3:
 			print("No data set specified")
 		else:
@@ -336,6 +392,7 @@ class DataSet:
 			print("{} cleaned".format(alias))
 		return None
 
+##########################################################################################################################
 
 def default():
 	print("Invalid Option")
