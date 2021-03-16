@@ -10,7 +10,9 @@ def switch(option: str):
 	cases: dict = {
 		'a': optionFunctions.Entry().add_entry,
 		'le': optionFunctions.Entry().list_entries,
-		'ad': optionFunctions.DataSet().add_new
+		'ad': optionFunctions.DataSet().add_new,
+		'cd': optionFunctions.DataSet().change_current,
+		'sd': optionFunctions.DataSet().show_current	
 		#'ld': optionFunctions.list_data_sets,
 		#'rd': optionFunctions.remove_data_base,
 		#'cd': optionFunctions.clean_data_base
