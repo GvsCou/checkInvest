@@ -260,11 +260,13 @@ class DataSet:
 	def change_current(self) -> None:
 		if len(sys.argv) > 2:
 			aliases: list = dataSet.get_existing_aliases()
+			print(aliases)
 			args: list = sys.argv
 			del args[0:2]
 			for arg in args:
 				if arg in aliases:
 					dataSet.change_current(arg)
+					print("{} is the new current".format(arg))
 					return None
 				else:
 					print("No {} found".format(arg))
@@ -279,7 +281,7 @@ class DataSet:
 					print("Current data set: " + self.all_dss[key][key2].get('alias', "Not Found"))
 					return None
 
-	def list_data_sets():
+	def list_existing(self) -> None:
 		path: str = configOptions.dict_from_parser()['PATHS']['data_sets_file']
 		if os.stat(path).st_size == 0:
 			print("There are no data sets")
@@ -291,8 +293,9 @@ class DataSet:
 					aliases.append(py_dict[key][key2].get('alias'))
 			for i in range(0, len(aliases), 1):
 				print(str(i) + ": " + aliases[i]) 
+		return None
 
-	def remove_data_base():
+	def remove(self) -> None:
 		if len (sys.argv) < 3:
 			print("No data set given")
 			return None
@@ -300,7 +303,7 @@ class DataSet:
 		file_path: str = ""
 		
 		if alias == "Default":
-			clean_data_base()
+			self.clean()
 			print("'Default' is never deleted, only cleaned")
 		else:
 			for key in list(self.all_dss):
@@ -317,21 +320,21 @@ class DataSet:
 						return None
 							
 			print("'" + alias + "' not found")
+		return None
 
-	def clean_data_base():
-		data_sets_file_path: str = configOptions.dict_from_parser()['PATHS']['data_sets_file']
-		data_sets_dict: dict = JsonHandler().get_json(data_sets_file_path)
-		
+	def clean(self) -> None:
 		if len(sys.argv) < 3:
 			print("No data set specified")
 		else:
 			for alias in sys.argv[2:]:
-				for key in data_sets_dict:
-					for key2 in data_sets_dict[key]:
-						if data_sets_dict[key][key2].get('alias', "") == alias:	
-							data_set: file = open(data_sets_dict[key][key2]['path'], 'w')
+				for key in self.all_dss:
+					for key2 in self.all_dss[key]:
+						if self.all_dss[key][key2].get('alias', "") == alias:	
+							data_set: file = open(self.all_dss[key][key2]['path'], 'w')
 							data_set.truncate(0)
 							data_set.close()
+			print("{} cleaned".format(alias))
+		return None
 
 
 def default():

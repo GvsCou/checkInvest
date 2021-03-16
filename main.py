@@ -12,10 +12,10 @@ def switch(option: str):
 		'le': optionFunctions.Entry().list_entries,
 		'ad': optionFunctions.DataSet().add_new,
 		'cd': optionFunctions.DataSet().change_current,
-		'sd': optionFunctions.DataSet().show_current	
-		#'ld': optionFunctions.list_data_sets,
-		#'rd': optionFunctions.remove_data_base,
-		#'cd': optionFunctions.clean_data_base
+		'sd': optionFunctions.DataSet().show_current,
+		'ld': optionFunctions.DataSet().list_existing,
+		'rd': optionFunctions.DataSet().remove,
+		'C': optionFunctions.DataSet().clean
 	}
 
 	cases.get(option, optionFunctions.default)()
