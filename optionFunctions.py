@@ -73,12 +73,10 @@ class Entry:
 		return c_dict
 
 
-	def add_new(self, ticker: str, mode: int=DICT_MODES.NEW) -> None:
+	def add_new(self, ticker: str, price: float, quantity: float, mode: int=DICT_MODES.NEW) -> None:
 		"""Void private function that outputs to either an empty (DICT_MODES.BRAND_NEW) or
 		to a non empty (DICT_MODES.NEW) .json"""
 
-		price: float = float(input("Enter the price of the asset: "))
-		quantity: float = float(input("Enter the quantity of the asset: "))
 		path: str = configOptions.dict_from_parser()['DATA_SET']['current']
 
 		if mode == self.DICT_MODES.NEW:
@@ -91,11 +89,9 @@ class Entry:
 			new_entry: dict = self.new_dict(mode, price, quantity, ticker)
 			self.json_handler.dump_json(path, new_entry)
 
-	def add_to_old(self, ticker: str) -> None:
+	def add_to_old(self, ticker: str, price: float, quantity: float) -> None:
 		"""Void private function that outputs to an non empty .json that already has the key (ticker)"""
 
-		price: float = float(input("Enter the price of the asset: "))
-		quantity: float = float(input("Enter the quantity of the asset: "))
 		path: str = configOptions.dict_from_parser()['DATA_SET']['current']
 		old_entry: dict = self.json_handler.get_json(path)
 		
@@ -109,27 +105,33 @@ class Entry:
 		self.json_handler.dump_json(path, old_entry)
 	
 
-	def add_entry(self):
+	def add_entry(self, is_interactive: bool):
 		"""Adds a new entry to the current data set by defining if the output .json is either 
 		empty (DICT_MODES.BRAND_NEW), not empty, but without the given key (ticker), or not empty
 		with the given key.
 
 		Then it selects between add_to_old(self, ticker: str) and add_new(self, ticker: str,
 		mode: int=DICT_MODES.NEW)"""
-
-		ticker: str = input("Enter asset name: ")
+		if is_interactive:
+			ticker: str = input("Enter the asset name: ")
+			price: float = input("Enter the asset's price: ")
+			quantity: float = input("Enter the asset's quantity: ")
+		else:
+			print("Not interactive")
+			exit()
 		path: str = configOptions.dict_from_parser()['DATA_SET']['current']
 		if os.stat(path).st_size == 0:
-			self.add_new(ticker, self.DICT_MODES.BRAND_NEW)
+			self.add_new(ticker, price, quantity, self.DICT_MODES.BRAND_NEW)
 		else:
 			py_dict: dict = self.json_handler.get_json(path)
 		
 			for key in py_dict:
 				if key == ticker:
-					self.add_to_old(ticker)
+					self.add_to_old(ticker, price, quantity)
 					return None
 			
-			self.add_new(ticker)
+			self.add_new(ticker, price, quantity)
+			
 
 	def table_mode(self, tickers: list) -> None:
 		"""This functions is responsible for fetching the price of assests and for displaying the latter"""
