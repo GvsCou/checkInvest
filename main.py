@@ -4,6 +4,26 @@ import sys
 from fnmatch import fnmatch
 import configOptions, optionFunctions
 
+class Chewer:
+	"""Class responsible for chewing user input and spitting it in a usable state
+	for the optionFunctions.py classes"""
+	
+	def __init__(self, arg1: list):
+		self.chewing: list = arg1
+		self.patterns: dict = {
+				'op_1_h': '-[!-]*',
+				'op_2_h': '--[!-]?*',
+				'l_op': 'as=?*'
+		}
+	
+	def spit(self, patt: str) -> list:
+		"""Returns a list of arguments tha match one of the values of
+		'self.patterns'"""
+
+		return [foo for foo in self.chewing if fnmatch(foo, self.patterns.get(patt, None))]
+		
+
+
 
 def switch(option: str):
 
@@ -29,7 +49,7 @@ def one_hifen(option: str):
 
 def check_option():
 	if len(sys.argv) > 1:
-		one_hifen(sys.argv[1])
+		pass
 	else:
 		print("No option given")
 
