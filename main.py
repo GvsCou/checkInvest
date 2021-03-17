@@ -24,9 +24,9 @@ class Chewer:
 		if self.one_hifen_opts:
 			option: str = self.one_hifen_opts.pop(-1)	
 			is_interactive: bool = False
-			if list(option).pop(-1) == 'i':
+			if list(option).copy().pop(-1) == 'i':
 				is_interactive: bool = True
-				cleaned_option: str = "".join(list(option).remove('i'))
+				cleaned_option: str = option[:2]
 				option = cleaned_option
 		elif self.two_hifen_opts:
 			option: str = self.two_hifen_opts.pop(-1)
@@ -54,7 +54,11 @@ class SwitchStatement:
 				['-l', '--list-entries'],
 				['-L', '--list-data-sets'],
 				['-S', '--show-current-data'],
-				['-a', '--add-entry']
+				['-a', '--add-entry'],
+				['-A', '--add-data-set'],
+				['-C', '--change-current-data'],
+				['-W', '--wipe-data-set'],
+				['-D', '--delete-data-set']
 		]
 		
 	
@@ -94,20 +98,21 @@ class SwitchStatement:
 			optionFunctions.Entry().add_entry(self.spat['args'])
 		return None
 
-def switch(option: str):
+	#Adds a new data set	
+	def case_4(self) -> None:
+		optionFunctions.DataSet().add_new()
 
-	cases: dict = {
-		'a': optionFunctions.Entry().add_entry,
-		'le': optionFunctions.Entry().list_entries,
-		'ad': optionFunctions.DataSet().add_new,
-		'cd': optionFunctions.DataSet().change_current,
-		'sd': optionFunctions.DataSet().show_current,
-		'ld': optionFunctions.DataSet().list_existing,
-		'rd': optionFunctions.DataSet().remove,
-		'C': optionFunctions.DataSet().clean
-	}
+	#Changes current data set
+	def case_5(self) -> None:
+		optionFunctions.DataSet().change_current()
+	
+	#Wipe a data set
+	def case_6(self) -> None:
+		optionFunctions.DataSet().wipe()
 
-	cases.get(option, optionFunctions.default)()
+	#Deletes a data set
+	def case_7(self) -> None:
+		optionFunctions.DataSet().delete()
 
 
 def one_hifen(option: str):

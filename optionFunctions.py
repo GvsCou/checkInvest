@@ -120,7 +120,8 @@ class Entry:
 			price: float = float(input("Enter the asset's price: ").replace(",","."))
 			quantity: float = float(input("Enter the asset's quantity: ").replace(",","."))
 		elif len(data) < 3:
-			print("In non-interactive mode, you must enter these arguments in the following order:")
+			print("In non-interactive mode, you must enter these arguments in the following order: " + 
+			"ticker, price, quantity")
 			exit()
 		else:
 			ticker: str = data[0].upper()
@@ -358,7 +359,7 @@ class DataSet:
 				print(str(i) + ": " + aliases[i]) 
 		return None
 
-	def remove(self) -> None:
+	def delete(self) -> None:
 		"""Deletes a data set"""
 		if len (sys.argv) < 3:
 			print("No data set given")
@@ -367,7 +368,7 @@ class DataSet:
 		file_path: str = ""
 		
 		if alias == "Default":
-			self.clean()
+			self.wipe()
 			print("'Default' is never deleted, only cleaned")
 		else:
 			for key in list(self.all_dss):
@@ -386,7 +387,7 @@ class DataSet:
 			print("'" + alias + "' not found")
 		return None
 
-	def clean(self) -> None:
+	def wipe(self) -> None:
 		"""Remove all entries from a data set by truncating it with '0' as an argument"""
 		if len(sys.argv) < 3:
 			print("No data set specified")
