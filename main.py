@@ -2,6 +2,7 @@
 
 import sys 
 from fnmatch import fnmatch
+from itertools import chain
 import configOptions, optionFunctions
 
 class Chewer:
@@ -10,17 +11,18 @@ class Chewer:
 	
 	def __init__(self, arg1: list):
 		self.chewing: list = arg1
-		self.patterns: dict = {
-				'op_1_h': '-[!-]*',
-				'op_2_h': '--[!-]?*',
-				'l_op': 'as=?*'
-		}
+
+		self.one_hifen_opts: list = [foo for foo in self.chewing if fnmatch(foo, '-[!-]*')]
+		self.two_hifen_opts: list = [foo for foo in self.chewing if fnmatch(foo, '--[!-]?*')]
+		self.list_opts: list = [foo for foo in self.chewing if fnmatch(foo,'as=?*')]
+		self.non_opts: list = [foo for foo in self.chewing if foo not in list(chain(self.one_hifen_opts, self.two_hifen_opts, self.list_opts))\
+		and not [char for char in list(foo) if char in ["-", "="]]][1:]
 	
-	def spit(self, patt: str) -> list:
+	def spit(self, patt: str="non") -> list:
 		"""Returns a list of arguments tha match one of the values of
 		'self.patterns'"""
 
-		return [foo for foo in self.chewing if fnmatch(foo, self.patterns.get(patt, None))]
+		return getattr(self, patt + "_opts")
 		
 
 
@@ -49,7 +51,11 @@ def one_hifen(option: str):
 
 def check_option():
 	if len(sys.argv) > 1:
-		pass
+		chewer = Chewer(sys.argv)	
+		print(chewer.spit("one_hifen"))
+		print(chewer.spit("two_hifen"))
+		print(chewer.spit("list"))
+		print(chewer.spit())
 	else:
 		print("No option given")
 
