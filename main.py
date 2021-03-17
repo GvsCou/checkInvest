@@ -3,7 +3,8 @@
 import sys 
 from fnmatch import fnmatch
 from itertools import chain
-import configOptions, optionFunctions
+from optionFunctions import Entry, DataSet
+import configOptions
 
 class Chewer:
 	"""Class responsible for chewing user input and spitting it in a usable state
@@ -77,49 +78,43 @@ class SwitchStatement:
 	
 	#Lists existing entries
 	def case_0(self) -> None:
-		optionFunctions.Entry().list_entries()
+		Entry().list_entries()
 		return None
 	
 	#Lists existing data sets
 	def case_1(self) -> None:
-		optionFunctions.DataSet().list_existing()
+		DataSet().list_existing()
 		return None
 	
 	#Shows current data set
 	def case_2(self) -> None:
-		optionFunctions.DataSet().show_current()
+		DataSet().show_current()
 		return None
 	
 	#Adds a new entry
 	def case_3(self) -> None:
 		if self.spat['i']:
-			optionFunctions.Entry().add_entry(is_interactive = True)
+			Entry().add_entry(is_interactive = True)
 		else:
-			optionFunctions.Entry().add_entry(self.spat['args'])
+			Entry().add_entry(self.spat['args'])
 		return None
 
 	#Adds a new data set	
 	def case_4(self) -> None:
-		optionFunctions.DataSet().add_new()
+		DataSet().add_new()
 
 	#Changes current data set
 	def case_5(self) -> None:
-		optionFunctions.DataSet().change_current()
+		DataSet().change_current()
 	
 	#Wipe a data set
 	def case_6(self) -> None:
-		optionFunctions.DataSet().wipe()
+		DataSet().wipe()
 
 	#Deletes a data set
 	def case_7(self) -> None:
-		optionFunctions.DataSet().delete()
+		DataSet().delete()
 
-
-def one_hifen(option: str):
-	if fnmatch(option, '-[!-]*'):
-		switch(option[1:])
-	else:
-		print("Invalid Option")
 
 def check_option():
 	if len(sys.argv) > 1:
