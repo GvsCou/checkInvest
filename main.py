@@ -13,19 +13,55 @@ class Chewer:
 		self.chewing: list = arg1
 
 		self.one_hifen_opts: list = [foo for foo in self.chewing if fnmatch(foo, '-[!-]*')]
-		self.two_hifen_opts: list = [foo for foo in self.chewing if fnmatch(foo, '--[!-]?*')]
+		self.two_hifen_opts: list = [foo for foo in self.chewing if fnmatch(foo, '--[!-]?*')] if not self.one_hifen_opts else []
 		self.list_opts: list = [foo for foo in self.chewing if fnmatch(foo,'as=?*')]
 		self.non_opts: list = [foo for foo in self.chewing if foo not in list(chain(self.one_hifen_opts, self.two_hifen_opts, self.list_opts))\
 		and not [char for char in list(foo) if char in ["-", "="]]][1:]
 	
-	def spit(self, patt: str="non") -> list:
+	def spit(self) -> dict:
 		"""Returns a list of arguments tha match one of the values of
 		'self.patterns'"""
+		if self.one_hifen_opts or self.two_hifen_opts:
+			option: str = self.one_hifen_opts.pop(-1) if self.one_hifen_opts else self.two_hifen_opts.pop(-1)	
+		else:
+			print("No option given")
+			exit()
+		spat: dict = {
+			'opt': option,
+			'list_opt': self.list_opts.pop(-1) if self.list_opts else None,
+			'args': self.non_opts
+		}		
 
-		return getattr(self, patt + "_opts")
+		return spat
 		
-
-
+class SwitchStatement:
+	
+	def __init__(self, arg1: dict):
+		self.spat = arg1
+		self.all_options: list = [
+				['-le', '--list-entries'],
+				['-ld', '--list-data-sets']
+		]
+	
+	def switch(self) -> None:
+		default = "Invalid Option"
+		case_num: int = sum(i for i in [1 for foo in self.all_options if self.spat['opt'] in foo])
+		case_num: int = 1 
+		for opts_list in self.all_options:
+			if self.spat['opt'] in opts_list:
+				case_num -= 1
+				break
+			else:
+				case_num += 1
+		getattr(self, "case_" + str(case_num) , lambda: print(default))()
+	
+	#Lists existing entries
+	def case_0(self) -> None:
+		optionFunctions.Entry().list_entries()
+	
+	#Lists existing data sets
+	def case_1(self) -> None:
+		optionFunctions.DataSet().list_existing()
 
 def switch(option: str):
 
@@ -51,11 +87,7 @@ def one_hifen(option: str):
 
 def check_option():
 	if len(sys.argv) > 1:
-		chewer = Chewer(sys.argv)	
-		print(chewer.spit("one_hifen"))
-		print(chewer.spit("two_hifen"))
-		print(chewer.spit("list"))
-		print(chewer.spit())
+		SwitchStatement(Chewer(sys.argv).spit()).switch()
 	else:
 		print("No option given")
 
