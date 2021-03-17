@@ -88,6 +88,7 @@ class Entry:
 		elif mode == self.DICT_MODES.BRAND_NEW:
 			new_entry: dict = self.new_dict(mode, price, quantity, ticker)
 			self.json_handler.dump_json(path, new_entry)
+		print(ticker + " entry added")
 
 	def add_to_old(self, ticker: str, price: float, quantity: float) -> None:
 		"""Void private function that outputs to an non empty .json that already has the key (ticker)"""
@@ -103,22 +104,28 @@ class Entry:
 		old_entry[ticker]['entry_' + str(i + 1)] = self.new_dict(self.DICT_MODES.OLD, price, quantity)
 	
 		self.json_handler.dump_json(path, old_entry)
+		print(ticker + " entry added")
 	
 
-	def add_entry(self, is_interactive: bool):
+	def add_entry(self, data: list=[], is_interactive: bool=False):
 		"""Adds a new entry to the current data set by defining if the output .json is either 
 		empty (DICT_MODES.BRAND_NEW), not empty, but without the given key (ticker), or not empty
 		with the given key.
 
 		Then it selects between add_to_old(self, ticker: str) and add_new(self, ticker: str,
 		mode: int=DICT_MODES.NEW)"""
+
 		if is_interactive:
-			ticker: str = input("Enter the asset name: ")
-			price: float = input("Enter the asset's price: ")
-			quantity: float = input("Enter the asset's quantity: ")
-		else:
-			print("Not interactive")
+			ticker: str = input("Enter the asset name: ").upper()
+			price: float = float(input("Enter the asset's price: ").replace(",","."))
+			quantity: float = float(input("Enter the asset's quantity: ").replace(",","."))
+		elif len(data) < 3:
+			print("In non-interactive mode, you must enter these arguments in the following order:")
 			exit()
+		else:
+			ticker: str = data[0].upper()
+			price: float = float(data[1].replace(",","."))
+			quantity: float = float(data[2].replace(",","."))
 		path: str = configOptions.dict_from_parser()['DATA_SET']['current']
 		if os.stat(path).st_size == 0:
 			self.add_new(ticker, price, quantity, self.DICT_MODES.BRAND_NEW)
@@ -145,7 +152,7 @@ class Entry:
 			if "Quote not found for ticker symbol: {}".format(ticker.upper()) in asset.price[ticker]:
 				ticker += ".sa"
 				asset = Ticker(ticker)		
-	
+			print(asset.price[ticker])	
 			given_currency: str = asset.price[ticker].get('currency', "")
 			if given_currency != base_currency:
 				asset_price: float = 0.0  if given_currency not in get_available_currencies() \

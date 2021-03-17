@@ -88,7 +88,11 @@ class SwitchStatement:
 	
 	#Adds a new entry
 	def case_3(self) -> None:
-		optionFunctions.Entry().add_entry(self.spat['i'])
+		if self.spat['i']:
+			optionFunctions.Entry().add_entry(is_interactive = True)
+		else:
+			optionFunctions.Entry().add_entry(self.spat['args'])
+		return None
 
 def switch(option: str):
 
