@@ -21,6 +21,7 @@ def check_base_files():
 		'config_path': "/home/" + getpass.getuser() + "/.config/checkInvest/checkInvest.config",
 		'data_sets_path': "/home/" + getpass.getuser() + "/.config/checkInvest/data_sets.json",
 		'data_sets_dir':  "/home/" + getpass.getuser() + "/.config/checkInvest/dataSets/",
+		'update_file': "/home/" + getpass.getuser() + "/.config/checkInvest/update_file.json"
 	}
 	
 	
@@ -54,6 +55,7 @@ def check_base_files():
 		"CONFIG_FILE =" + setup_archives['config_path']  + '\n' \
 		"DATA_SETS_FILE =" + setup_archives['data_sets_path'] + '\n' \
 		"DATA_SETS_DIR =" + setup_archives['data_sets_dir'] + '\n' \
+		"UPDATE_FILE =" + setup_archives['update_file'] + '\n' \
 		"" + '\n' \
 		"[DATA_SET]" + '\n' \
 		"CURRENT =" + setup_archives['data_sets_dir'] + "dataSet1.json" + '\n') 

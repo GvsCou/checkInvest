@@ -27,6 +27,7 @@ class JsonHandler:
 ##########################################################################################################################
 
 class Asset:
+	"""Class responsible for getting the current data for a given asset"""
 
 	def __init__(self, arg1: str, rounding: int=2):
 		self.json_handler = JsonHandler()
@@ -57,7 +58,7 @@ class Asset:
 
 	def get_non_crypto(self, ticker: str, base_currency: str) -> float:
 		"""This functions uses the 'yahooquery' module, when 'ticker' is not in 
-		get_available_currencies()"""
+		get_available_currencies() - see __init__(): self.price"""
 		asset: Ticker = Ticker(ticker)
 		#Appends '.sa' if the stock is brazillian
 		if "Quote not found for ticker symbol: {}".format(ticker.upper()) in asset.price[ticker]:
@@ -74,6 +75,18 @@ class Asset:
 
 		return asset_price	
 
+##########################################################################################################################
+
+class Updater:
+	"""Class responsible for updating the file the contains the assets' prices"""
+	
+	def __init__(self, ds=[]):
+		self.data_sets: list = ds	
+		if not os.path.isfile(configOptions.dict_from_parser['PATHS']['update_file']):
+			self.update_file: file = open(configOptions.dict_from_parser['PATHS']['update_file'], 'w')
+			
+
+##########################################################################################################################
 	
 class Entry:
 	"""Class responsible for adding, listing and removing entries"""
