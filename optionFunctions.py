@@ -88,13 +88,51 @@ class Updater:
 		self.update_file: file = open(self.update_file_path, 'a')
 
 	def update_data_set(self, data_sets: list) -> None:
+
+		def fill_empty(assets: list) -> None:
+			py_dict: dict = {}
+			for elem in assets:
+				py_dict[elem] = Asset[elem].price
+			self.json_handler.dump_json(self.update_file_path, py_dict)
+			return None
+		def fill_non_empty(assets: list) -> None:
+			update_file_dict: dict = self.json_handler.get_json(self.update_file_path)	
+			for elem in assets:
+				update_file_dict[elem] = Asset(elem).price
+			self.json_handler.dump_json(self.update_file_path, update_file_dict)
+			return None
+
 		if data_sets:
-			pass	
+			non_empty_data: list = []
+			present_assets: list = []
+			for key in self.ds_dict:
+				if self.ds_dict[key].get('alias', "") in data_sets:
+					if os.stat(self.ds_dict[key]['path']).st_size != 0:
+						non_empty_data.append(self.ds_dict[key]['alias'])
+						[present_assets.append(foo) for foo in \
+						self.json_handler.get_json(self.ds_dict[key]['path'])\
+						if foo not in present_assets]
+						
+			if not non_empty_data:
+				print("No valid data set found")
+				self.update_file.close()
+				exit()
+			
+			if os.stat(self.update_file_path).st_size == 0:
+				fill_empty(present_assets)
+			else:
+				fill_non_empty(present_assets)
+
+			if data_sets != non_empty_data:
+				print("{} not found or empty".format(", ".join([foo for foo in data_sets \
+				if foo not in non_empty_data])))
 		else:
+			#When current data set is empty
 			if os.stat(self.config_file['DATA_SET']['current']).st_size == 0:
 				print("There's nothing in the current data set")
 				self.update_file.close()
 				exit()
+
 			current_name: str = "Not Found"
 			for key in self.ds_dict:
 				if self.ds_dict[key].get('current', False):
@@ -102,15 +140,9 @@ class Updater:
 					break
 			current_data_set: dict = self.json_handler.get_json(self.config_file['DATA_SET']['current'])
 			if os.stat(self.update_file_path).st_size == 0:
-				py_dict: dict = {}
-				for key in current_data_set:
-					py_dict[key] = Asset(key).price
-				self.json_handler.dump_json(self.update_file_path, py_dict)
+				fill_empty(present_assets)
 			else:
-				update_file_dict: dict = self.json_handler.get_json(self.update_file_path)	
-				for key in current_data_set:
-					update_file_dict[key] = Asset(key).price	
-				self.json_handler.dump_json(self.update_file_path, update_file_dict)
+				fill_non_empty(current_data_set.keys())
 			print("{} updated".format(current_name))
 			
 		self.update_file.close()
