@@ -80,10 +80,42 @@ class Asset:
 class Updater:
 	"""Class responsible for updating the file the contains the assets' prices"""
 	
-	def __init__(self, ds=[]):
-		self.data_sets: list = ds	
-		if not os.path.isfile(configOptions.dict_from_parser['PATHS']['update_file']):
-			self.update_file: file = open(configOptions.dict_from_parser['PATHS']['update_file'], 'w')
+	def __init__(self):
+		self.config_file: dict = configOptions.dict_from_parser()
+		self.json_handler = JsonHandler()
+		self.ds_dict: dict = self.json_handler.get_json(self.config_file['PATHS']['data_sets_file'])['data_sets']
+		self.update_file_path: str = self.config_file['PATHS']['update_file']
+		self.update_file: file = open(self.update_file_path, 'a')
+
+	def update_data_set(self, data_sets: list) -> None:
+		if data_sets:
+			pass	
+		else:
+			if os.stat(self.config_file['DATA_SET']['current']).st_size == 0:
+				print("There's nothing in the current data set")
+				self.update_file.close()
+				exit()
+			current_name: str = "Not Found"
+			for key in self.ds_dict:
+				if self.ds_dict[key].get('current', False):
+					current_name = self.ds_dict[key].get('alias', "Not Found")	
+					break
+			current_data_set: dict = self.json_handler.get_json(self.config_file['DATA_SET']['current'])
+			if os.stat(self.update_file_path).st_size == 0:
+				py_dict: dict = {}
+				for key in current_data_set:
+					py_dict[key] = Asset(key).price
+				self.json_handler.dump_json(self.update_file_path, py_dict)
+			else:
+				update_file_dict: dict = self.json_handler.get_json(self.update_file_path)	
+				for key in current_data_set:
+					update_file_dict[key] = Asset(key).price	
+				self.json_handler.dump_json(self.update_file_path, update_file_dict)
+			print("{} updated".format(current_name))
+			
+		self.update_file.close()
+				
+		return None
 			
 
 ##########################################################################################################################

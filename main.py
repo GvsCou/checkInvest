@@ -3,7 +3,7 @@
 import sys 
 from fnmatch import fnmatch
 from itertools import chain
-from optionFunctions import Entry, DataSet
+from optionFunctions import Entry, DataSet, Updater
 import configOptions
 
 class Chewer:
@@ -58,7 +58,8 @@ class SwitchStatement:
 				['-A', '--add-data-set'],
 				['-C', '--change-current-data'],
 				['-W', '--wipe-data-set'],
-				['-D', '--delete-data-set']
+				['-D', '--delete-data-set'],
+				['-u', '--update-data-set']
 		]
 		
 	
@@ -114,6 +115,10 @@ class SwitchStatement:
 	#Deletes a data set
 	def case_7(self) -> None:
 		DataSet().delete()
+	
+	#Updates the current or the selected data sets
+	def case_8(self) -> None:
+		Updater().update_data_set(self.spat['args'])
 
 
 def check_option():
