@@ -177,7 +177,8 @@ class Entry:
 
 	def __init__(self):
 		self.json_handler = JsonHandler()
-		self.current_path: str = configOptions.dict_from_parser()['DATA_SET']['current']
+		self.config_dict: dict = configOptions.dict_from_parser()
+		self.current_path: str = self.config_dict['DATA_SET']['current']
 
 	class DICT_MODES(enum.Enum):
 		OLD = 0
@@ -221,7 +222,7 @@ class Entry:
 
 
 	def add_new(self, ticker: str, price: float, quantity: float, mode: int=DICT_MODES.NEW) -> None:
-		"""Void private function that outputs to either an empty (DICT_MODES.BRAND_NEW) or
+		"""Function that outputs to either an empty (DICT_MODES.BRAND_NEW) or
 		to a non empty (DICT_MODES.NEW) .json"""
 
 		path: str = self.current_path
@@ -238,7 +239,7 @@ class Entry:
 		print(ticker + " entry added")
 
 	def add_to_old(self, ticker: str, price: float, quantity: float) -> None:
-		"""Void private function that outputs to an non empty .json that already has the key (ticker)"""
+		"""Function that outputs to an non empty .json that already has the key (ticker)"""
 
 		path: str = self.current_path
 		old_entry: dict = self.json_handler.get_json(path)
@@ -289,7 +290,8 @@ class Entry:
 			
 
 	def table_mode(self, tickers: list) -> None:
-		"""This functions is responsible for fetching the price of assests and for displaying the latter"""
+		"""This function is responsible for displaying the assets, their quantity, current price and value
+		as a table"""
 
 		py_dict: dict = self.json_handler.get_json(self.current_path)
 		found: bool = True
@@ -310,8 +312,11 @@ class Entry:
 			if tickers and ticker not in tickers:
 				continue 
 			asset = Asset(ticker)
-			print("{:<15}{:<15}{:<15}".format(ticker, str(asset.get_qtd()), "{} ".format(asset.get_grapheme()) + \
-			str(asset.get_price())) + "{} ".format(asset.get_grapheme()) + str(round(asset.get_qtd() * asset.get_price(),2)))
+			grapheme: str = asset.get_grapheme()
+			qtd: float = asset.get_qtd()
+			price: float = self.json_handler.get_json(self.config_dict['PATHS']['update_file'])[ticker]
+			print("{:<15}{:<15}{:<15}".format(ticker, str(qtd), "{} ".format(grapheme) + \
+			str(price)) + "{} ".format(grapheme) + str(round(qtd * price, 2)))
 	
 		if not_found_list:
 			print("")
