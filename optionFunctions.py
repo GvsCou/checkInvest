@@ -31,28 +31,26 @@ class Asset:
 
 	def __init__(self, arg1: str, rounding: int=2):
 		self.json_handler = JsonHandler()
-
 		self.ticker: str = arg1
-		
-		def get_qtd(ticker: str) -> float:
-			current_data: dict = self.json_handler.get_json(configOptions.dict_from_parser()['DATA_SET']['current'])
-			for key in current_data:
-				qtd: float = 0.0
-				if key != ticker:
-					continue
-				else:
-					for entry in current_data[key]:
-						qtd += current_data[key][entry].get('quantity', 0.0)	
-					return qtd	
-		
-		self.qtd: float = get_qtd(self.ticker)
-
 		self.currency: str = configOptions.dict_from_parser()['SETUP']['base_currency']
 
-		self.grapheme: str = "$" if self.currency not in self.json_handler.get_json("currency-format.json") \
+	def get_grapheme(self) -> str:
+		return "$" if self.currency not in self.json_handler.get_json("currency-format.json") \
 		else self.json_handler.get_json("currency-format.json")[self.currency]['symbol'].get('grapheme', "$")
 
-		self.price: float = round(float(self.get_non_crypto(self.ticker, self.currency)), rounding) \
+	def get_qtd(self) -> float:
+		current_data: dict = self.json_handler.get_json(configOptions.dict_from_parser()['DATA_SET']['current'])
+		for key in current_data:
+			qtd: float = 0.0
+			if key != self.ticker:
+				continue
+			else:
+				for entry in current_data[key]:
+					qtd += current_data[key][entry].get('quantity', 0.0)	
+		return qtd
+
+	def get_price(self) -> float:
+		return round(float(self.get_non_crypto(self.ticker, self.currency)), rounding) \
 	 	if self.ticker not in get_available_currencies() \
 		else round(get_exchange_rate(self.ticker.lower(), self.currency.lower()),2)
 
@@ -93,14 +91,14 @@ class Updater:
 	def fill_empty(self, assets: list) -> None:
 		py_dict: dict = {}
 		for elem in assets:
-			py_dict[elem] = Asset[elem].price
+			py_dict[elem] = Asset(elem).get_price()
 		self.json_handler.dump_json(self.update_file_path, py_dict)
 		return None
 
 	def fill_non_empty(self, assets: list) -> None:
 		update_file_dict: dict = self.json_handler.get_json(self.update_file_path)	
 		for elem in assets:
-			update_file_dict[elem] = Asset(elem).price
+			update_file_dict[elem] = Asset(elem).get_price()
 		self.json_handler.dump_json(self.update_file_path, update_file_dict)
 		return None
 
@@ -312,10 +310,8 @@ class Entry:
 			if tickers and ticker not in tickers:
 				continue 
 			asset = Asset(ticker)
-			qtd: float = asset.qtd
-			price: float = asset.price
-			print("{:<15}{:<15}{:<15}".format(ticker, str(asset.qtd), "{} ".format(asset.grapheme) + \
-			str(asset.price)) + "{} ".format(asset.grapheme) + str(round(asset.qtd * asset.price,2)))
+			print("{:<15}{:<15}{:<15}".format(ticker, str(asset.get_qtd()), "{} ".format(asset.get_grapheme()) + \
+			str(asset.get_price())) + "{} ".format(asset.get_grapheme()) + str(round(asset.get_qtd() * asset.get_price(),2)))
 	
 		if not_found_list:
 			print("")
