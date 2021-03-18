@@ -59,7 +59,8 @@ class SwitchStatement:
 				['-C', '--change-current-data'],
 				['-W', '--wipe-data-set'],
 				['-D', '--delete-data-set'],
-				['-u', '--update-data-set']
+				['-u', '--update-data-set'],
+				['-U', '--update-all']
 		]
 		
 	
@@ -118,6 +119,10 @@ class SwitchStatement:
 	#Updates the current or the selected data sets
 	def case_8(self) -> None:
 		Updater().update_data_set(self.spat['args'])
+	
+	#Updates all data sets
+	def case_9(self) -> None:
+		Updater().update_all()
 
 
 def check_option():
