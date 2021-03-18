@@ -27,8 +27,54 @@ class JsonHandler:
 ##########################################################################################################################
 
 class Asset:
-	pass	
 
+	def __init__(self, arg1: str, rounding: int=2):
+		self.json_handler = JsonHandler()
+
+		self.ticker: str = arg1
+		
+		def get_qtd(ticker: str) -> float:
+			current_data: dict = self.json_handler.get_json(configOptions.dict_from_parser()['DATA_SET']['current'])
+			for key in current_data:
+				qtd: float = 0.0
+				if key != ticker:
+					continue
+				else:
+					for entry in current_data[key]:
+						qtd += current_data[key][entry].get('quantity', 0.0)	
+					return qtd	
+		
+		self.qtd: float = get_qtd(self.ticker)
+
+		self.currency: str = configOptions.dict_from_parser()['SETUP']['base_currency']
+
+		self.grapheme: str = "$" if self.currency not in self.json_handler.get_json("currency-format.json") \
+		else self.json_handler.get_json("currency-format.json")[self.currency]['symbol'].get('grapheme', "$")
+
+		self.price: float = round(float(self.get_non_crypto(self.ticker, self.currency)), rounding) \
+	 	if self.ticker not in get_available_currencies() \
+		else round(get_exchange_rate(self.ticker.lower(), self.currency.lower()),2)
+
+	def get_non_crypto(self, ticker: str, base_currency: str) -> float:
+		"""This functions uses the 'yahooquery' module, when 'ticker' is not in 
+		get_available_currencies()"""
+		asset: Ticker = Ticker(ticker)
+		#Appends '.sa' if the stock is brazillian
+		if "Quote not found for ticker symbol: {}".format(ticker.upper()) in asset.price[ticker]:
+			ticker += ".sa"
+			asset = Ticker(ticker)		
+		print(asset.price[ticker])	
+		given_currency: str = asset.price[ticker].get('currency', "")
+		if given_currency != base_currency:
+			asset_price: float = 0.0  if given_currency not in get_available_currencies() \
+			else get_exchange_rate(given_currency.lower(), currency.lower()) * \
+			asset.price[ticker].get('regularMarketPrice', 0.0)
+		else:
+			asset_price: float = asset.price[ticker].get('regularMarketPrice', 0.0)
+
+		return asset_price	
+
+	
 class Entry:
 	"""Class responsible for adding, listing and removing entries"""
 
@@ -148,34 +194,10 @@ class Entry:
 	def table_mode(self, tickers: list) -> None:
 		"""This functions is responsible for fetching the price of assests and for displaying the latter"""
 
-		def get_non_crypto(ticker, base_currency):
-			"""This functions uses the 'yahooquery' module, when 'ticker' is not in 
-			get_available_currencies()"""
-
-			asset: Ticker = Ticker(ticker)
-			#Appends '.sa' if the stock is brazillian
-			if "Quote not found for ticker symbol: {}".format(ticker.upper()) in asset.price[ticker]:
-				ticker += ".sa"
-				asset = Ticker(ticker)		
-			print(asset.price[ticker])	
-			given_currency: str = asset.price[ticker].get('currency', "")
-			if given_currency != base_currency:
-				asset_price: float = 0.0  if given_currency not in get_available_currencies() \
-				else get_exchange_rate(given_currency.lower(), currency.lower()) * \
-				asset.price[ticker].get('regularMarketPrice', 0.0)
-			else:
-				asset_price: float = asset.price[ticker].get('regularMarketPrice', 0.0)
-	
-			return asset_price
-
-
-		path: str = self.current_path
-		py_dict: dict = self.json_handler.get_json(path)
+		py_dict: dict = self.json_handler.get_json(self.current_path)
 		found: bool = True
 		not_found_list: list = []
-		currency: str = configOptions.dict_from_parser()['SETUP']['base_currency']
-		grapheme: str = "$" if currency not in self.json_handler.get_json("currency-format.json") \
-		else self.json_handler.get_json("currency-format.json")[currency]['symbol'].get('grapheme', "$")
+		
 	
 		if tickers:
 			found = False
@@ -190,16 +212,11 @@ class Entry:
 		for ticker in py_dict:
 			if tickers and ticker not in tickers:
 				continue 
-			qtd: float = 0.0
-			price: float = float(get_non_crypto(ticker, currency)) \
-	 		if ticker not in get_available_currencies() \
-			else get_exchange_rate(ticker.lower(), currency.lower())
-			value: float = 0.0
-			for key in py_dict[ticker]:
-				qtd += py_dict[ticker][key].get('quantity', 0.0)
-			value = qtd * price
-			print("{:<15}{:<15}{:<15}".format(ticker, str(qtd), "{} ".format(grapheme) + "%.2f" %  price) \
-			+ "{} ".format(grapheme) + "%.2f" % value)
+			asset = Asset(ticker)
+			qtd: float = asset.qtd
+			price: float = asset.price
+			print("{:<15}{:<15}{:<15}".format(ticker, str(asset.qtd), "{} ".format(asset.grapheme) + \
+			str(asset.price)) + "{} ".format(asset.grapheme) + str(round(asset.qtd * asset.price,2)))
 	
 		if not_found_list:
 			print("")
