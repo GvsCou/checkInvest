@@ -33,6 +33,7 @@ class Asset:
 		self.json_handler = JsonHandler()
 		self.ticker: str = arg1
 		self.currency: str = configOptions.dict_from_parser()['SETUP']['base_currency']
+		self.rounding: int = rounding
 
 	def get_grapheme(self) -> str:
 		return "$" if self.currency not in self.json_handler.get_json("currency-format.json") \
@@ -47,10 +48,12 @@ class Asset:
 			else:
 				for entry in current_data[key]:
 					qtd += current_data[key][entry].get('quantity', 0.0)	
+				break
+					
 		return qtd
 
 	def get_price(self) -> float:
-		return round(float(self.get_non_crypto(self.ticker, self.currency)), rounding) \
+		return round(float(self.get_non_crypto(self.ticker, self.currency)), self.rounding) \
 	 	if self.ticker not in get_available_currencies() \
 		else round(get_exchange_rate(self.ticker.lower(), self.currency.lower()),2)
 
@@ -62,11 +65,11 @@ class Asset:
 		if "Quote not found for ticker symbol: {}".format(ticker.upper()) in asset.price[ticker]:
 			ticker += ".sa"
 			asset = Ticker(ticker)		
-		print(asset.price[ticker])	
+		#print(asset.price[ticker])	
 		given_currency: str = asset.price[ticker].get('currency', "")
 		if given_currency != base_currency:
 			asset_price: float = 0.0  if given_currency not in get_available_currencies() \
-			else get_exchange_rate(given_currency.lower(), currency.lower()) * \
+			else get_exchange_rate(given_currency.lower(), self.currency.lower()) * \
 			asset.price[ticker].get('regularMarketPrice', 0.0)
 		else:
 			asset_price: float = asset.price[ticker].get('regularMarketPrice', 0.0)
@@ -102,6 +105,13 @@ class Updater:
 		self.json_handler.dump_json(self.update_file_path, update_file_dict)
 		return None
 
+	def add_asset(self, asset: str) -> None:
+		price: float = 0.0		
+		if os.stat(self.update_file_path).st_size == 0:
+			self.fill_empty([asset])
+		else:
+			self.fill_non_empty([asset])
+		return None
 
 	def update_data_set(self, data_sets: list) -> None:
 		"""Function responsible for updating the current data set - if no argument is given - 
@@ -143,9 +153,9 @@ class Updater:
 					break
 			current_data_set: dict = self.json_handler.get_json(self.config_file['DATA_SET']['current'])
 			if os.stat(self.update_file_path).st_size == 0:
-				fill_empty(present_assets)
+				self.fill_empty(present_assets)
 			else:
-				fill_non_empty(current_data_set.keys())
+				self.fill_non_empty(current_data_set.keys())
 			print("{} updated".format(current_name))
 			
 		return None
@@ -308,13 +318,21 @@ class Entry:
 		if found:
 			print("{:.<15}{:.<15}{:.<15}Value".format("Ticker","Quantity", "Price"))
 
+
+		def new_ticker(new_ticker: str, asset_class) -> float:
+			Updater().add_asset(ticker)
+			
+			return asset_class.get_price()
+
 		for ticker in py_dict:
 			if tickers and ticker not in tickers:
 				continue 
 			asset = Asset(ticker)
 			grapheme: str = asset.get_grapheme()
 			qtd: float = asset.get_qtd()
-			price: float = self.json_handler.get_json(self.config_dict['PATHS']['update_file'])[ticker]
+			price_dict: dict = self.json_handler.get_json(self.config_dict['PATHS']['update_file'])
+			price: float = price_dict[ticker] if ticker in price_dict \
+			else new_ticker(ticker, asset)
 			print("{:<15}{:<15}{:<15}".format(ticker, str(qtd), "{} ".format(grapheme) + \
 			str(price)) + "{} ".format(grapheme) + str(round(qtd * price, 2)))
 	
