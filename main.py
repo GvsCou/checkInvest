@@ -78,8 +78,7 @@ class SwitchStatement:
 	
 	#Lists existing entries
 	def case_0(self) -> None:
-		Entry().list_entries(self.spat['args'] if self.spat['args'] else [],\
-		self.spat['list_opt'])
+		Entry().list_entries(self.spat['args'], self.spat['list_opt'])
 		return None
 	
 	#Lists existing data sets
