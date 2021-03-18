@@ -40,11 +40,10 @@ class Chewer:
 			exit()
 		spat: dict = {
 			'opt': option,
-			'list_opt': self.list_opts.pop(-1) if self.list_opts else None,
+			'list_opt': self.list_opts.pop(-1)[3:] if self.list_opts else "",
 			'args': self.non_opts,
 			'i': is_interactive
 		}		
-
 		return spat
 		
 class SwitchStatement:
@@ -78,7 +77,8 @@ class SwitchStatement:
 	
 	#Lists existing entries
 	def case_0(self) -> None:
-		Entry().list_entries()
+		Entry().list_entries(self.spat['args'] if self.spat['args'] else [],\
+		self.spat['list_opt'])
 		return None
 	
 	#Lists existing data sets

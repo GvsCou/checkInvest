@@ -26,11 +26,15 @@ class JsonHandler:
 
 ##########################################################################################################################
 
+class Asset:
+	pass	
+
 class Entry:
 	"""Class responsible for adding, listing and removing entries"""
 
-	def __init__(self, jh=JsonHandler()):
-		self.json_handler = jh
+	def __init__(self):
+		self.json_handler = JsonHandler()
+		self.current_path: str = configOptions.dict_from_parser()['DATA_SET']['current']
 
 	class DICT_MODES(enum.Enum):
 		OLD = 0
@@ -77,7 +81,7 @@ class Entry:
 		"""Void private function that outputs to either an empty (DICT_MODES.BRAND_NEW) or
 		to a non empty (DICT_MODES.NEW) .json"""
 
-		path: str = configOptions.dict_from_parser()['DATA_SET']['current']
+		path: str = self.current_path
 
 		if mode == self.DICT_MODES.NEW:
 			new_entry: dict = self.new_dict(mode, price, quantity)
@@ -93,7 +97,7 @@ class Entry:
 	def add_to_old(self, ticker: str, price: float, quantity: float) -> None:
 		"""Void private function that outputs to an non empty .json that already has the key (ticker)"""
 
-		path: str = configOptions.dict_from_parser()['DATA_SET']['current']
+		path: str = self.current_path
 		old_entry: dict = self.json_handler.get_json(path)
 		
 		i: int = 0 
@@ -127,7 +131,7 @@ class Entry:
 			ticker: str = data[0].upper()
 			price: float = float(data[1].replace(",","."))
 			quantity: float = float(data[2].replace(",","."))
-		path: str = configOptions.dict_from_parser()['DATA_SET']['current']
+		path: str = self.current_path
 		if os.stat(path).st_size == 0:
 			self.add_new(ticker, price, quantity, self.DICT_MODES.BRAND_NEW)
 		else:
@@ -165,7 +169,7 @@ class Entry:
 			return asset_price
 
 
-		path: str = configOptions.dict_from_parser()['DATA_SET']['current']
+		path: str = self.current_path
 		py_dict: dict = self.json_handler.get_json(path)
 		found: bool = True
 		not_found_list: list = []
@@ -205,19 +209,15 @@ class Entry:
 	def json_mode(self, tickers: list):
 		"""Prints the complete data set in json format"""
 
-		path: str = configOptions.dict_from_parser()['DATA_SET']['current']
+		path: str = self.current_path
 		py_dict: dict = self.json_handler.get_json(path)
 		not_found_list: list = []
 		print(json.dumps(py_dict, indent=2, sort_keys=True))
 
-	def list_entries(self):
+	def list_entries(self, given_tickers: list, mode: str):
 		"""Lists the entries of the current data set as a table (table_mode()) or as the other supported
 		formats:
 		1) json(json_mode())"""
-		path: str = configOptions.dict_from_parser()['DATA_SET']['current']
-		args: list = [] if len(sys.argv) < 3 \
-		else [foo for foo in sys.argv[2:] if not fnmatch.fnmatch(foo, 'as=?*')]
-		possible_modes: list = fnmatch.filter(sys.argv, 'as=?*')
 	
 		def switch_list(option: str, tickers: list):
 			cases: dict = {
@@ -225,11 +225,10 @@ class Entry:
 			}
 			cases.get(option, self.table_mode)(tickers)
 	
-		if os.stat(path).st_size == 0:
+		if os.stat(self.current_path).st_size == 0:
 			print("There are no entries in the data file")
 		else:
-			mode: str = possible_modes.pop(-1)[3:] if len(possible_modes) > 0 else ""
-			switch_list(mode, args)
+			switch_list(mode, given_tickers)
 
 ##########################################################################################################################
 
