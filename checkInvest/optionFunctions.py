@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 import os, sys, json, configparser, fnmatch, enum, datetime
-import configOptions
+from . import configOptions
 from cryptonator import get_available_currencies, get_exchange_rate
 from yahooquery import Ticker
 
