@@ -1,5 +1,3 @@
-#!/usr/bin/python3
-
 import getpass, os, configparser, json
 
 def data_set_dir(key: str, alias: str, path: str, is_current=False) -> dict:
@@ -44,22 +42,21 @@ def check_base_files():
 		data_set_1.close()
 
 	if not os.path.isfile(setup_archives['config_path']):
-		setup_archives['config_file'] = open(setup_archives['config_path'], 'w')
-		setup_archives['config_file'].write(\
-		"[SETUP]" + "\n" \
-		"INITIAL_SETUP_DONE = true" + '\n' \
-		"BASE_CURRENCY = USD" + '\n' \
-		"" + '\n' \
-		"[PATHS]" + '\n' \
-		"SETUP_DIR =" + setup_archives['dir'] + '\n' \
-		"CONFIG_FILE =" + setup_archives['config_path']  + '\n' \
-		"DATA_SETS_FILE =" + setup_archives['data_sets_path'] + '\n' \
-		"DATA_SETS_DIR =" + setup_archives['data_sets_dir'] + '\n' \
-		"UPDATE_FILE =" + setup_archives['update_file'] + '\n' \
-		"" + '\n' \
-		"[DATA_SET]" + '\n' \
-		"CURRENT =" + setup_archives['data_sets_dir'] + "dataSet1.json" + '\n') 
-		setup_archives['config_file'].close()
+		with open(setup_archives['config_path'], 'w') as setup_archives['config_file']:
+			setup_archives['config_file'].write(\
+			"[SETUP]" + "\n" \
+			"INITIAL_SETUP_DONE = true" + '\n' \
+			"BASE_CURRENCY = USD" + '\n' \
+			"" + '\n' \
+			"[PATHS]" + '\n' \
+			"SETUP_DIR =" + setup_archives['dir'] + '\n' \
+			"CONFIG_FILE =" + setup_archives['config_path']  + '\n' \
+			"DATA_SETS_FILE =" + setup_archives['data_sets_path'] + '\n' \
+			"DATA_SETS_DIR =" + setup_archives['data_sets_dir'] + '\n' \
+			"UPDATE_FILE =" + setup_archives['update_file'] + '\n' \
+			"" + '\n' \
+			"[DATA_SET]" + '\n' \
+			"CURRENT =" + setup_archives['data_sets_dir'] + "dataSet1.json" + '\n') 
 
 
 def dict_from_parser() -> dict:
