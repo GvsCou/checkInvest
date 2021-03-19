@@ -3,7 +3,7 @@
 import sys 
 from fnmatch import fnmatch
 from itertools import chain
-from .optionFunctions import Entry, DataSet, Updater 
+from .optionFunctions import Entry, DataSet, Updater, help_func
 from . import configOptions
 
 class Chewer:
@@ -20,8 +20,7 @@ class Chewer:
 		and not [char for char in list(foo) if char in ["-", "="]]][1:]
 	
 	def spit(self) -> dict:
-		"""Returns a list of arguments tha match one of the values of
-		'self.patterns'"""
+		"""Returns a list of arguments"""
 		if self.one_hifen_opts:
 			option: str = self.one_hifen_opts.pop(-1)	
 			is_interactive: bool = False
@@ -74,7 +73,7 @@ class SwitchStatement:
 				break
 			else:
 				case_num += 1
-		getattr(self, "case_" + str(case_num) , lambda: print(default))()
+		getattr(self, "case_" + str(case_num) , self.default)()
 		return None
 	
 	#Lists existing entries
@@ -123,6 +122,10 @@ class SwitchStatement:
 	#Updates all data sets
 	def case_9(self) -> None:
 		Updater().update_all()
+
+	#Default (--help)
+	def default(self) -> None:
+		help_func()
 
 
 def check_option():

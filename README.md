@@ -5,7 +5,7 @@ A command line tool (CTL) through which one is able to keep track of one's inves
 ## Install
 
 ### OS Dependent
-Now its use is restricted to GNU/Linux, since 'tis using a hardcode '/home/$USER/.config'.
+Now its use is restricted to GNU/Linux and Windows (although untested), due to hardcoding for the data and config files.
 
 ### PIP
 

@@ -1,4 +1,6 @@
-import getpass, os, configparser, json
+import os, configparser, json
+from platform import system
+from getpass import getuser
 
 def data_set_dir(key: str, alias: str, path: str, is_current=False) -> dict:
 	new_dict: dict = {
@@ -12,16 +14,33 @@ def data_set_dir(key: str, alias: str, path: str, is_current=False) -> dict:
 		}
 	return new_dict
 
+def set_paths_dict() -> dict:
+	user_os: str = system()
+	paths_dict: dict = {}
+	
+	if user_os == "Linux":
+		paths_dict = {
+			'dir': "/home/" + getuser() + "/.config/checkInvest/",
+			'config_path': "/home/" + getuser() + "/.config/checkInvest/checkInvest.config",
+			'data_sets_path': "/home/" + getuser() + "/.config/checkInvest/data_sets.json",
+			'data_sets_dir':  "/home/" + getuser() + "/.config/checkInvest/dataSets/",
+			'update_file': "/home/" + getuser() + "/.config/checkInvest/update_file.json"
+		}	
+	elif user_os == "Windows":
+		paths_dict = {
+			'dir': "C:\\Users\\" + getuser() + "\\AppData\\Local\\checkInvest\\",
+			'config_path': "C:\\Users\\" + getuser() + "\\AppData\\Local\\checkInvest\\checkInvest.config",
+			'data_sets_path': "C:\\Users\\" + getuser() + "\\AppData\\Local\\checkInvest\\data_sets.json",
+			'data_sets_dir':  "C:\\Users\\" + getuser() + "\\AppData\\Local\\checkInvest\\dataSets\\",
+			'update_file': "C:\\Users\\" + getuser() + "\\AppData\\Local\\checkInvest\\update_file.json"
+		}
+	else:
+		print("Unsupported OS")
+		exit()
+	return paths_dict
 
 def check_base_files():
-	setup_archives: dict = {
-		'dir': "/home/" + getpass.getuser() + "/.config/checkInvest/",
-		'config_path': "/home/" + getpass.getuser() + "/.config/checkInvest/checkInvest.config",
-		'data_sets_path': "/home/" + getpass.getuser() + "/.config/checkInvest/data_sets.json",
-		'data_sets_dir':  "/home/" + getpass.getuser() + "/.config/checkInvest/dataSets/",
-		'update_file': "/home/" + getpass.getuser() + "/.config/checkInvest/update_file.json"
-	}
-	
+	setup_archives: dict = set_paths_dict()
 	
 	if os.path.isfile(setup_archives['config_path']):
 		parser: configparser = configparser.ConfigParser()
@@ -60,7 +79,7 @@ def check_base_files():
 
 
 def dict_from_parser() -> dict:
-	path: str = "/home/" + getpass.getuser() + "/.config/checkInvest/checkInvest.config"
+	path: str = "/home/" + getuser() + "/.config/checkInvest/checkInvest.config"
 	parser: configparser = configparser.ConfigParser()
 	parser.read(path)
 	return parser._sections

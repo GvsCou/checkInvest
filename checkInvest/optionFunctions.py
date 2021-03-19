@@ -538,6 +538,16 @@ class DataSet:
 
 ##########################################################################################################################
 
-def default():
-	print("Invalid Option")
-
+def help_func() -> None:
+	print("Usage: checkinv [option] [argument] \n\n\
+	\t-l --list-entries\n\
+	\t-L --list-data-sets\n\
+	\t-S --show-current-data\n\
+	\t-a --add-entry\n\
+	\t-A --add-data-set\n\
+	\t-C --change-current-data\n\
+	\t-W --wipe-data-set\n\
+	\t-D --delete-data-set\n\
+	\t-u --update-data-set\n\
+	\t-U --update-all\n\
+	\t-h --help")
