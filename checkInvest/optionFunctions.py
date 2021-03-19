@@ -36,8 +36,9 @@ class Asset:
 		self.rounding: int = rounding
 
 	def get_grapheme(self) -> str:
-		return "$" if self.currency not in self.json_handler.get_json("currency-format.json") \
-		else self.json_handler.get_json("currency-format.json")[self.currency]['symbol'].get('grapheme', "$")
+		abs_path: str = os.path.realpath(__file__).replace(os.path.basename(__file__),"")
+		return "$" if self.currency not in self.json_handler.get_json(abs_path + "currency-format.json") \
+		else self.json_handler.get_json(abs_path + "currency-format.json")[self.currency]['symbol'].get('grapheme', "$")
 
 	def get_qtd(self) -> float:
 		current_data: dict = self.json_handler.get_json(configOptions.dict_from_parser()['DATA_SET']['current'])

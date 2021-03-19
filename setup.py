@@ -24,9 +24,8 @@ setup(
 		]
 	},
 	package_data={
-		'.': ['currency-format.json']
+		"": ['currency-format.json']
 	},
-	include_package_data=True,
 	python_requires='>=3.8'
 	
 
