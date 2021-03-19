@@ -2,6 +2,19 @@
 
 A command line tool (CTL) through which one is able to keep track of one's investments and expenses.
 
+## Install
+
+### OS Dependent
+Now its use is restricted to GNU/Linux, since 'tis using a hardcode '/home/$USER/.config'.
+
+###PIP
+
+```
+git clone https://github.com/GvsCou/checkInvest.git <dir>
+cd <dir>
+pip install .
+```
+
 ## Used Software Mention
 
 ### cryptonator (available at: https://github.com/aldur/cryptonator and https://pypi.org/project/cryptonator/)

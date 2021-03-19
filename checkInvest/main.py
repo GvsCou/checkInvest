@@ -3,8 +3,8 @@
 import sys 
 from fnmatch import fnmatch
 from itertools import chain
-from optionFunctions import Entry, DataSet, Updater
-import configOptions
+from .optionFunctions import Entry, DataSet, Updater 
+from . import configOptions
 
 class Chewer:
 	"""Class responsible for chewing user input and spitting it in a usable state
@@ -130,6 +130,9 @@ def check_option():
 		SwitchStatement(Chewer(sys.argv).spit()).switch()
 	else:
 		print("No option given")
+def main():
+	configOptions.check_base_files()
+	check_option()
 
-configOptions.check_base_files()
-check_option()
+if __name__=='__main__':
+	main()
