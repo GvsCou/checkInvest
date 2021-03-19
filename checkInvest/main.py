@@ -3,7 +3,7 @@
 import sys 
 from fnmatch import fnmatch
 from itertools import chain
-from .optionFunctions import Entry, DataSet, Updater, help_func
+from .optionFunctions import Entry, DataSet, Updater, help_func, ArgHandler
 from . import configOptions
 
 class Chewer:
@@ -135,7 +135,7 @@ def check_option():
 		print("No option given")
 def main():
 	configOptions.check_base_files()
-	check_option()
+	ArgHandler().add_args()
 
 if __name__=='__main__':
 	main()

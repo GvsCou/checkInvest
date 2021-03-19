@@ -1,8 +1,54 @@
 import os, sys, json, configparser, fnmatch, enum, datetime
+import argparse
 from . import configOptions
 from cryptonator import get_available_currencies, get_exchange_rate
 from yahooquery import Ticker
 
+
+class ArgHandler:
+	"""Class responsible for dealing with user input (sys.argv)"""
+
+	def __init__(self):
+		self.js = JsonHandler() 				#See JsonHandler Class
+		self.cfg: dict = configOptions.dict_from_parser()	#Dict from 'checkInvest.config'
+		self.ds_summ: dict = self.js.get_json(			#Dict from 'data_sets.json'
+		self.cfg['PATHS']['data_sets_file']
+		)['data_sets']
+
+	
+
+	##Adding Arguments##
+	
+	def add_args(self) -> None:
+		#Setting Up Parser
+		parser = argparse.ArgumentParser(
+			prog="checkinv", 						#Name to Be Displayed in --help
+			description="A CTL for managing one's expenses and investments" #Description to Be Displayed in --help
+		)
+		#List Entries
+		parser.add_argument(
+			'-l', '--list-entries', 		#Name/Flags
+			action=ListEntries,			#What It Does with Positional Arguments
+			nargs='*',
+			default=[self.ds_summ[key]['alias']	#Alias of Data Set with true in 'current'
+			for key in self.ds_summ if self.ds_summ[key]['current']].pop(-1),
+			help="Lists all or some (specified) " 	#Help Message to Be Displayed in --help
+			"assets from the current data set",
+			metavar=''				#Metavar to Be Displayed in --help	
+		)
+	
+		args = parser.parse_args()
+		
+
+		return None
+
+class ListEntries(argparse.Action):
+	
+	def __call__(self, parser, namespace, values, option_string=None):
+		if values:
+			Entry().list_entries(values)
+		else:
+			Entry().list_entries()
 
 class JsonHandler:
 	"""Simple class that handles getting a dict from a .json and outputting a dict to a .json """
@@ -349,7 +395,7 @@ class Entry:
 		not_found_list: list = []
 		print(json.dumps(py_dict, indent=2, sort_keys=True))
 
-	def list_entries(self, given_tickers: list, mode: str):
+	def list_entries(self, given_tickers: list=[], mode: str=""):
 		"""Lists the entries of the current data set as a table (table_mode()) or as the other supported
 		formats:
 		1) json(json_mode())"""
