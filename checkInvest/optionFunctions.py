@@ -26,25 +26,111 @@ class ArgHandler:
 			description="A CTL for managing one's expenses and investments" #Description to Be Displayed in --help
 		)
 		#List Entries
-		parser.add_argument(
-			'-l', '--list-entries', 		#Name/Flags
-			action=ListEntries,			#What It Does with Positional Arguments
-			nargs='*',
-			default=[self.ds_summ[key]['alias']	#Alias of Data Set with true in 'current'
-			for key in self.ds_summ if self.ds_summ[key]['current']].pop(-1),
-			help="Lists all or some (specified) " 	#Help Message to Be Displayed in --help
-			"assets from the current data set",
-			metavar=''				#Metavar to Be Displayed in --help	
-		)
-	
-		args = parser.parse_args()
 		
+		parser.add_argument(
+			'-l', '--list-entries', 				#Name/Flags
+			action='store',			#What It Does with Positional Arguments
+			nargs='*',
+			#default=[self.ds_summ[key]['alias']	#Alias of Data Set with true in 'current'
+			#for key in self.ds_summ if self.ds_summ[key]['current']].pop(-1),
+			help="Lists all or some (specified) " 	#Help Message to Be Displayed in --help
+			"assets from the current data set "
+			"or the existing data sets",
+			#metavar=''				#Metavar to Be Displayed in --help	
+		)
+		parser.add_argument(
+			'-s','--style',
+			action='store',
+			nargs='?',
+			type=str,
+			const="",
+			choices=['json', ""]
+			)
+
+		args = parser.parse_args().__dict__
+
+		used_args: dict = {}
+		
+		for arg in args:
+			if args[arg] != None:
+				used_args[arg] = args[arg] 
+
+		SwitchStatement(used_args).switch()
 
 		return None
 
+class SwitchStatement:
+	
+	def __init__(self, arg1: dict):
+		self.parsed_args = arg1
+		self.all_options: list = [
+				"list_entries"
+		]
+		
+	
+	def switch(self) -> None:
+		case_num: int = 1 
+		for arg in self.all_options:
+			if arg == list(self.parsed_args.keys()).pop(0):
+				case_num -= 1
+				break
+			else:
+				case_num += 1
+		getattr(self, "case_" + str(case_num) , lambda: None)()
+		return None
+	
+	#Lists existing entries
+	def case_0(self) -> None:
+		Entry().list_entries(self.parsed_args['list_entries'], \
+		self.parsed_args['style'] if 'style' in self.parsed_args else "")
+		return None
+	
+	#Lists existing data sets
+	def case_1(self) -> None:
+		DataSet().list_existing()
+		return None
+	
+	#Shows current data set
+	def case_2(self) -> None:
+		DataSet().show_current()
+		return None
+	
+	#Adds a new entry
+	def case_3(self) -> None:
+		if self.parsed_args['i']:
+			Entry().add_entry(is_interactive = True)
+		else:
+			Entry().add_entry(self.parsed_args['args'])
+		return None
+
+	#Adds a new data set	
+	def case_4(self) -> None:
+		DataSet().add_new()
+
+	#Changes current data set
+	def case_5(self) -> None:
+		DataSet().change_current()
+	
+	#Wipe a data set
+	def case_6(self) -> None:
+		DataSet().wipe()
+
+	#Deletes a data set
+	def case_7(self) -> None:
+		DataSet().delete()
+	
+	#Updates the current or the selected data sets
+	def case_8(self) -> None:
+		Updater().update_data_set(self.parsed_args['args'])
+	
+	#Updates all data sets
+	def case_9(self) -> None:
+		Updater().update_all()
 class ListEntries(argparse.Action):
 	
 	def __call__(self, parser, namespace, values, option_string=None):
+		print(namespace)
+		print(values)
 		if values:
 			Entry().list_entries(values)
 		else:
