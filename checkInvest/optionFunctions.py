@@ -94,6 +94,15 @@ class ArgHandler:
 			help="wipes a data set clean",
 			metavar="ALIAS"
 		)
+		#Deletes a Data Set
+		parser.add_argument(
+			'-D', '--delete-data-set',
+			action='store',
+			nargs='+',
+			type=str,
+			help="deletes a data set",
+			metavar="ALIAS"
+		)
 		#Interactive Mode
 		parser.add_argument(
 			'-i', '--interactive',
@@ -141,7 +150,8 @@ class SwitchStatement:
 				"add_entry",
 				"add_data_set",
 				"change_current",
-				"wipe_data_set"
+				"wipe_data_set",
+				"delete_data_set"
 		]
 		
 	
@@ -194,7 +204,7 @@ class SwitchStatement:
 
 	#Deletes a data set
 	def case_7(self) -> None:
-		DataSet().delete()
+		DataSet().delete(self.parsed_args['delete_data_set'])
 	
 	#Updates the current or the selected data sets
 	def case_8(self) -> None:
@@ -684,21 +694,19 @@ class DataSet:
 				print(str(i) + ": " + aliases[i]) 
 		return None
 
-	def delete(self) -> None:
+	def delete(self, aliases: list) -> None:
 		"""Deletes a data set"""
-		if len (sys.argv) < 3:
-			print("No data set given")
-			return None
-		alias: str = sys.argv[2]
+
 		file_path: str = ""
 		
-		if alias == "Default":
-			self.wipe()
-			print("'Default' is never deleted, only cleaned")
-		else:
+		for alias in aliases.copy():
 			for key in list(self.all_dss):
 				for key2 in list(self.all_dss[key]):
-					if alias == self.all_dss[key][key2].get('alias', ""):
+					if alias == "Default":
+						self.wipe(["Default"])
+						aliases.remove("Default")
+						print("'Default' is never deleted, only cleaned")
+					elif alias == self.all_dss[key][key2].get('alias', ""):
 						file_path = self.all_dss[key][key2]['path']
 						os.remove(file_path)
 						if self.all_dss[key][key2].get('current', False): 
@@ -707,9 +715,10 @@ class DataSet:
 						del new_set_dict[key][key2]
 						JsonHandler().dump_json(self.dss_paths, new_set_dict)
 						print(alias + " deleted")
-						return None
-							
-			print("'" + alias + "' not found")
+						aliases.remove(alias)
+		if aliases:
+			for elem in aliases:
+				print("{} not found".format(alias))
 		return None
 
 	def wipe(self, aliases: list) -> None:
