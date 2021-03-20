@@ -19,7 +19,7 @@ class ArgHandler:
 
 	##Adding Arguments##
 	
-	def add_args(self) -> None:
+	def handle(self) -> None:
 		#Setting Up Parser
 		parser = argparse.ArgumentParser(
 			prog="checkinv", 						#Name to Be Displayed in --help
