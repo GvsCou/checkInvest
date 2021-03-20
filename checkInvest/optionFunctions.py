@@ -23,10 +23,11 @@ class ArgHandler:
 		#Setting Up Parser
 		parser = argparse.ArgumentParser(
 			prog="checkinv", 						#Name to Be Displayed in --help
-			description="A CTL for managing one's expenses and investments" #Description to Be Displayed in --help
+			description="A CTL for managing one's expenses and investments", #Description to Be Displayed in --help
+			epilog="As a rule of thumb, when an option is captalized (e. g., '-A'), 'tis related to data "
+			"set opertations."
 		)
 		#List Entries
-		
 		parser.add_argument(
 			'-l', '--list-entries', 		#Name/Flags
 			action='store',				#What It Does with Given Arguments
@@ -35,11 +36,13 @@ class ArgHandler:
 			"assets from the current data set",
 			metavar="ASSET"				#Metavar to Be Displayed in --help	
 		)
+		#List Data Sets
 		parser.add_argument(
-		'-L', '--list-data-sets',
-		action='store_true',
-		help="lists all existing data sets"
+			'-L', '--list-data-sets',
+			action='store_true',
+			help="lists all existing data sets"
 		)
+		#Choose display style
 		parser.add_argument(
 			'-s','--style',
 			action='store',
@@ -49,6 +52,46 @@ class ArgHandler:
 			choices=['json', ""],
 			help="sets the style of the output"
 		)
+		#Show Current Data Set
+		parser.add_argument(
+			'-S', '--show-current',
+			action='store_true',
+			help='shows the current data set'
+		)
+		#Add a New Entry to Current Data Set
+		parser.add_argument(
+			'-a', '--add-entry',
+			action='store',
+			nargs='*',
+			type=str,
+			help="adds a new entry to the current data set",
+			metavar="TICKER PRICE QUANTITY"
+		)
+		#Add New Data Set
+		parser.add_argument(
+			'-A', '--add-data-set',
+			action='store',
+			nargs=1,
+			type=str,
+			help="adds a new data set",
+			metavar="ALIAS"
+		)
+		#Change Current Data Set
+		parser.add_argument(
+			'-C', '--change-current',
+			action='store',
+			nargs=1,
+			type=str,
+			help="changes the current data set",
+			metavar="ALIAS"
+		)
+		#Interactive Mode
+		parser.add_argument(
+			'-i', '--interactive',
+			action='store_true',
+			help="implements interactive mode"
+		)
+
 
 		##Get all 'add_arguments' given to parser##
 		#d: list= parser.__dict__['_optionals'].__dict__['_group_actions']
@@ -71,7 +114,7 @@ class ArgHandler:
 		used_args: dict = {}
 		
 		for arg in args:
-			if args[arg] != None:
+			if args[arg] != None and args[arg] != False:
 				used_args[arg] = args[arg] 
 
 		SwitchStatement(used_args).switch()
@@ -84,7 +127,11 @@ class SwitchStatement:
 		self.parsed_args = arg1
 		self.all_options: list = [
 				"list_entries",
-				"list_data_sets"
+				"list_data_sets",
+				"show_current",
+				"add_entry",
+				"add_data_set",
+				"change_current"
 		]
 		
 	
@@ -117,19 +164,19 @@ class SwitchStatement:
 	
 	#Adds a new entry
 	def case_3(self) -> None:
-		if self.parsed_args['i']:
-			Entry().add_entry(is_interactive = True)
-		else:
-			Entry().add_entry(self.parsed_args['args'])
+		Entry().add_entry(self.parsed_args['add_entry'],\
+		self.parsed_args['interactive'] if 'interactive' in self.parsed_args else False)
 		return None
 
 	#Adds a new data set	
 	def case_4(self) -> None:
-		DataSet().add_new()
+		DataSet().add_new(self.parsed_args['add_data_set'].pop(-1))
+		return None
 
 	#Changes current data set
 	def case_5(self) -> None:
-		DataSet().change_current()
+		DataSet().change_current(self.parsed_args['change_current'].pop(-1))
+		return None
 	
 	#Wipe a data set
 	def case_6(self) -> None:
@@ -146,15 +193,6 @@ class SwitchStatement:
 	#Updates all data sets
 	def case_9(self) -> None:
 		Updater().update_all()
-class ListEntries(argparse.Action):
-	
-	def __call__(self, parser, namespace, values, option_string=None):
-		print(namespace)
-		print(values)
-		if values:
-			Entry().list_entries(values)
-		else:
-			Entry().list_entries()
 
 class JsonHandler:
 	"""Simple class that handles getting a dict from a .json and outputting a dict to a .json """
@@ -201,7 +239,7 @@ class Asset:
 					qtd += current_data[key][entry].get('quantity', 0.0)	
 				break
 					
-		return qtd
+		return round(qtd, 8)
 
 	def get_price(self) -> float:
 		return round(float(self.get_non_crypto(self.ticker, self.currency)), self.rounding) \
@@ -416,7 +454,7 @@ class Entry:
 		print(ticker + " entry added")
 	
 
-	def add_entry(self, data: list=[], is_interactive: bool=False):
+	def add_entry(self, data: list, is_interactive: bool):
 		"""Adds a new entry to the current data set by defining if the output .json is either 
 		empty (DICT_MODES.BRAND_NEW), not empty, but without the given key (ticker), or not empty
 		with the given key.
@@ -424,7 +462,7 @@ class Entry:
 		Then it selects between add_to_old(self, ticker: str) and add_new(self, ticker: str,
 		mode: int=DICT_MODES.NEW)"""
 
-		if is_interactive:
+		if is_interactive or not data:
 			ticker: str = input("Enter the asset name: ").upper()
 			price: float = float(input("Enter the asset's price: ").replace(",","."))
 			quantity: float = float(input("Enter the asset's quantity: ").replace(",","."))
@@ -501,7 +539,7 @@ class Entry:
 		not_found_list: list = []
 		print(json.dumps(py_dict, indent=2, sort_keys=True))
 
-	def list_entries(self, given_tickers: list=[], mode: str=""):
+	def list_entries(self, given_tickers: list, mode: str):
 		"""Lists the entries of the current data set as a table (table_mode()) or as the other supported
 		formats:
 		1) json(json_mode())"""
@@ -579,12 +617,10 @@ class DataSet:
 		self.data_set_inner = self.__DataSetInner(self.dss_paths, self.all_dss)
 
 
-	def add_new(self):
+	def add_new(self, given_name: str):
 		"""Adds a new data set and sets it to be current"""
-		if len(sys.argv) < 3:
-			print("No alias given")
-			return None
-		alias: str = sys.argv[2:].pop(-1)
+
+		alias: str = given_name
 		py_dict: dict = self.all_dss
 		i: int = 0
 		for key in list(py_dict):
@@ -606,21 +642,14 @@ class DataSet:
 		print(alias + " was created and is now the new current data set")
 
 		
-	def change_current(self) -> None:
+	def change_current(self, given_name: str) -> None:
 		"""Just changes the current"""
-		if len(sys.argv) > 2:
-			aliases: list = self.data_set_inner.get_existing_aliases()
-			args: list = sys.argv
-			del args[0:2]
-			for arg in args:
-				if arg in aliases:
-					self.data_set_inner.change_current(arg)
-					return None
-				else:
-					print("No {} found".format(arg))
+		aliases: list = self.data_set_inner.get_existing_aliases()
+		if given_name in aliases:
+			self.data_set_inner.change_current(given_name)
 		else:
-			print("No alias given")
-			return None
+			print("No {} found".format(given_name))
+		return None
 					
 	def show_current(self) -> None:
 		"""Just shows the current"""
