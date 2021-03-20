@@ -28,15 +28,17 @@ class ArgHandler:
 		#List Entries
 		
 		parser.add_argument(
-			'-l', '--list-entries', 				#Name/Flags
-			action='store',			#What It Does with Positional Arguments
-			nargs='*',
-			#default=[self.ds_summ[key]['alias']	#Alias of Data Set with true in 'current'
-			#for key in self.ds_summ if self.ds_summ[key]['current']].pop(-1),
-			help="Lists all or some (specified) " 	#Help Message to Be Displayed in --help
-			"assets from the current data set "
-			"or the existing data sets",
-			#metavar=''				#Metavar to Be Displayed in --help	
+			'-l', '--list-entries', 		#Name/Flags
+			action='store',				#What It Does with Given Arguments
+			nargs='*',				#Possible Given Arguments
+			help="lists all or some (specified) " 	#Help Message to Be Displayed in --help
+			"assets from the current data set",
+			metavar="ASSET"				#Metavar to Be Displayed in --help	
+		)
+		parser.add_argument(
+		'-L', '--list-data-sets',
+		action='store_true',
+		help="lists all existing data sets"
 		)
 		parser.add_argument(
 			'-s','--style',
@@ -44,9 +46,26 @@ class ArgHandler:
 			nargs='?',
 			type=str,
 			const="",
-			choices=['json', ""]
-			)
+			choices=['json', ""],
+			help="sets the style of the output"
+		)
 
+		##Get all 'add_arguments' given to parser##
+		#d: list= parser.__dict__['_optionals'].__dict__['_group_actions']
+		#opts: list = []
+		#for elem in d:
+			#if "_HelpAction" in str(elem):
+				#continue
+			#else:
+				#opts.append(str(elem).replace("_StoreAction", "").split(", ")[1])
+		#for i in range(len(opts)):
+			#for s in ["'", "--", "]"]:
+				#opts[i].replace(s, "")
+				#print(i)
+				#print(s)
+				#print(opts[i])
+		#print(opts)
+				
 		args = parser.parse_args().__dict__
 
 		used_args: dict = {}
@@ -64,7 +83,8 @@ class SwitchStatement:
 	def __init__(self, arg1: dict):
 		self.parsed_args = arg1
 		self.all_options: list = [
-				"list_entries"
+				"list_entries",
+				"list_data_sets"
 		]
 		
 	
