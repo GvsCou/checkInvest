@@ -103,6 +103,15 @@ class ArgHandler:
 			help="deletes a data set",
 			metavar="ALIAS"
 		)
+		#Update Data Sets
+		parser.add_argument(
+			'-U', '--update-data-set',
+			action='store',
+			nargs='+',
+			type=str,
+			help="updates data sets",
+			metavar="ALIAS"
+		)
 		#Interactive Mode
 		parser.add_argument(
 			'-i', '--interactive',
@@ -151,7 +160,8 @@ class SwitchStatement:
 				"add_data_set",
 				"change_current",
 				"wipe_data_set",
-				"delete_data_set"
+				"delete_data_set",
+				"update_data_set"
 		]
 		
 	
@@ -208,12 +218,8 @@ class SwitchStatement:
 	
 	#Updates the current or the selected data sets
 	def case_8(self) -> None:
-		Updater().update_data_set(self.parsed_args['args'])
+		Updater().update_data_set(self.parsed_args['update_data_set'])
 	
-	#Updates all data sets
-	def case_9(self) -> None:
-		Updater().update_all()
-
 class JsonHandler:
 	"""Simple class that handles getting a dict from a .json and outputting a dict to a .json """
 
@@ -304,6 +310,7 @@ class Updater:
 		py_dict: dict = {}
 		for elem in assets:
 			py_dict[elem] = Asset(elem).get_price()
+			print("{} updated".format(elem))
 		self.json_handler.dump_json(self.update_file_path, py_dict)
 		return None
 
@@ -311,6 +318,7 @@ class Updater:
 		update_file_dict: dict = self.json_handler.get_json(self.update_file_path)	
 		for elem in assets:
 			update_file_dict[elem] = Asset(elem).get_price()
+			print("{} updated".format(elem))
 		self.json_handler.dump_json(self.update_file_path, update_file_dict)
 		return None
 
@@ -326,69 +334,29 @@ class Updater:
 		"""Function responsible for updating the current data set - if no argument is given - 
 		or the given data sets"""
 
-		if data_sets:
-			non_empty_data: list = []
-			present_assets: list = []
-			for key in self.ds_dict:
-				if self.ds_dict[key].get('alias', "") in data_sets:
-					if os.stat(self.ds_dict[key]['path']).st_size != 0:
-						non_empty_data.append(self.ds_dict[key]['alias'])
-						[present_assets.append(foo) for foo in \
-						self.json_handler.get_json(self.ds_dict[key]['path'])\
-						if foo not in present_assets]
-						
-			if not non_empty_data:
-				print("No valid data set found")
-				exit()
-			
-			if os.stat(self.update_file_path).st_size == 0:
-				self.fill_empty(present_assets)
-			else:
-				self.fill_non_empty(present_assets)
-
-			if data_sets != non_empty_data:
-				print("{} not found or empty".format(", ".join([foo for foo in data_sets \
-				if foo not in non_empty_data])))
-		else:
-			#When current data set is empty
-			if os.stat(self.config_file['DATA_SET']['current']).st_size == 0:
-				print("There's nothing in the current data set")
-				exit()
-
-			current_name: str = "Not Found"
-			for key in self.ds_dict:
-				if self.ds_dict[key].get('current', False):
-					current_name = self.ds_dict[key].get('alias', "Not Found")	
-					break
-			current_data_set: dict = self.json_handler.get_json(self.config_file['DATA_SET']['current'])
-			if os.stat(self.update_file_path).st_size == 0:
-				self.fill_empty(present_assets)
-			else:
-				self.fill_non_empty(current_data_set.keys())
-			print("{} updated".format(current_name))
-			
-		return None
-	
-	def update_all(self) -> None:
+		non_empty_data: list = []
 		present_assets: list = []
 		for key in self.ds_dict:
-			if os.stat(self.ds_dict[key]['path']).st_size != 0:
-				[present_assets.append(foo) for foo in \
-				self.json_handler.get_json(self.ds_dict[key]['path'])\
-				if foo not in present_assets]
-		if not present_assets:
-			print("No data set had any entries")
+			if self.ds_dict[key].get('alias', "") in data_sets:
+				if os.stat(self.ds_dict[key]['path']).st_size != 0:
+					non_empty_data.append(self.ds_dict[key]['alias'])
+					[present_assets.append(foo) for foo in \
+					self.json_handler.get_json(self.ds_dict[key]['path'])\
+					if foo not in present_assets]
+					
+		if not non_empty_data:
+			print("No valid data set found")
 			exit()
-
+		
 		if os.stat(self.update_file_path).st_size == 0:
 			self.fill_empty(present_assets)
 		else:
 			self.fill_non_empty(present_assets)
-		print("All data sets updated")
-
+		if data_sets != non_empty_data:
+			print("{} not found or empty".format(", ".join([foo for foo in data_sets \
+			if foo not in non_empty_data])))
 		return None
-			
-
+	
 ##########################################################################################################################
 	
 class Entry:
