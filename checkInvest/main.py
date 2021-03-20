@@ -3,7 +3,7 @@
 import sys 
 from fnmatch import fnmatch
 from itertools import chain
-from .optionFunctions import Entry, DataSet, Updater, help_func, ArgHandler
+from .optionFunctions import Entry, DataSet, Updater, ArgHandler
 from . import configOptions
 
 class Chewer:

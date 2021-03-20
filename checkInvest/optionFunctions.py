@@ -85,6 +85,15 @@ class ArgHandler:
 			help="changes the current data set",
 			metavar="ALIAS"
 		)
+		#Wipe Data Set Clean
+		parser.add_argument(
+			'-W', '--wipe-data-set',
+			action='store',
+			nargs='+',
+			type=str,
+			help="wipes a data set clean",
+			metavar="ALIAS"
+		)
 		#Interactive Mode
 		parser.add_argument(
 			'-i', '--interactive',
@@ -131,7 +140,8 @@ class SwitchStatement:
 				"show_current",
 				"add_entry",
 				"add_data_set",
-				"change_current"
+				"change_current",
+				"wipe_data_set"
 		]
 		
 	
@@ -180,7 +190,7 @@ class SwitchStatement:
 	
 	#Wipe a data set
 	def case_6(self) -> None:
-		DataSet().wipe()
+		DataSet().wipe(self.parsed_args['wipe_data_set'])
 
 	#Deletes a data set
 	def case_7(self) -> None:
@@ -702,33 +712,19 @@ class DataSet:
 			print("'" + alias + "' not found")
 		return None
 
-	def wipe(self) -> None:
+	def wipe(self, aliases: list) -> None:
 		"""Remove all entries from a data set by truncating it with '0' as an argument"""
-		if len(sys.argv) < 3:
-			print("No data set specified")
-		else:
-			for alias in sys.argv[2:]:
-				for key in self.all_dss:
-					for key2 in self.all_dss[key]:
-						if self.all_dss[key][key2].get('alias', "") == alias:	
-							data_set: file = open(self.all_dss[key][key2]['path'], 'w')
+		for alias in aliases.copy():
+			for key in self.all_dss:
+				for key2 in self.all_dss[key]:
+					if self.all_dss[key][key2].get('alias', "") == alias:	
+						with open(self.all_dss[key][key2]['path'], 'w') as data_set:
 							data_set.truncate(0)
-							data_set.close()
-			print("{} cleaned".format(alias))
+							print("{} cleaned".format(alias))
+							aliases.remove(alias)
+		if aliases:
+			for elem in aliases:
+				print("{} not found".format(elem))
 		return None
 
 ##########################################################################################################################
-
-def help_func() -> None:
-	print("Usage: checkinv [option] [argument] \n\n\
-	\t-l --list-entries\n\
-	\t-L --list-data-sets\n\
-	\t-S --show-current-data\n\
-	\t-a --add-entry\n\
-	\t-A --add-data-set\n\
-	\t-C --change-current-data\n\
-	\t-W --wipe-data-set\n\
-	\t-D --delete-data-set\n\
-	\t-u --update-data-set\n\
-	\t-U --update-all\n\
-	\t-h --help")
