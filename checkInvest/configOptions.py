@@ -42,42 +42,52 @@ def set_paths_dict() -> dict:
 def check_base_files():
 	setup_archives: dict = set_paths_dict()
 	
-	if os.path.isfile(setup_archives['config_path']):
+	#Checks if initial set up is done by getting the bool var from parser['SETUP']['INITIAL_SETUP_DONE']
+	try:
 		parser: configparser = configparser.ConfigParser()
-		parser.read(setup_archives['config_path'])
+		parser.read(setup_archives['config_path'])	
 		if parser['SETUP'].getboolean('INITIAL_SETUP_DONE', False):
 			return None
-	
-	os.mkdir(setup_archives['dir'])
-	
-	if not os.path.isfile(setup_archives['data_sets_path']):
-		os.mkdir(setup_archives['data_sets_dir'])
-		setup_archives['data_sets_file'] = open(setup_archives['data_sets_path'], 'w')
-		data_sets: dict = data_set_dir("data_set_1", "Default", setup_archives['data_sets_dir'] + 
-		"dataSet1.json", is_current=True)
-		json.dump(data_sets, setup_archives['data_sets_file'], sort_keys = True, indent = 2)
-		data_set_1: file = open(data_sets['data_sets']['data_set_1']['path'], 'w')
-		setup_archives['data_sets_file'].close()
-		data_set_1.close()
+	except:	
+		#Makes dir for config and data files
+		os.mkdir(setup_archives['dir'])
+		
+		if not os.path.isfile(setup_archives['data_sets_path']):
+			#Makes dir for dataSetN.json
+			os.mkdir(setup_archives['data_sets_dir']) 
 
-	if not os.path.isfile(setup_archives['config_path']):
-		with open(setup_archives['config_path'], 'w') as setup_archives['config_file']:
-			setup_archives['config_file'].write(\
-			"[SETUP]" + "\n" \
-			"INITIAL_SETUP_DONE = true" + '\n' \
-			"BASE_CURRENCY = USD" + '\n' \
-			"" + '\n' \
-			"[PATHS]" + '\n' \
-			"SETUP_DIR =" + setup_archives['dir'] + '\n' \
-			"CONFIG_FILE =" + setup_archives['config_path']  + '\n' \
-			"DATA_SETS_FILE =" + setup_archives['data_sets_path'] + '\n' \
-			"DATA_SETS_DIR =" + setup_archives['data_sets_dir'] + '\n' \
-			"UPDATE_FILE =" + setup_archives['update_file'] + '\n' \
-			"" + '\n' \
-			"[DATA_SET]" + '\n' \
-			"CURRENT =" + setup_archives['data_sets_dir'] + "dataSet1.json" + '\n') 
+			#Creates dataSet1.json (alias="Default")
+			with open(setup_archives['data_sets_path'], 'w') as ds_file:
+				data_sets: dict = data_set_dir("data_set_1", "Default", setup_archives['data_sets_dir'] + 
+				"dataSet1.json", is_current=True)
+				json.dump(data_sets, ds_file, sort_keys = True, indent = 2)
 
+			#Creates data_sets.json which contains the path, alias and current (bool) of
+			#all created data sets
+			data_set_1: file = open(data_sets['data_sets']['data_set_1']['path'], 'w')
+			data_set_1.close()
 
+		#Creates checkInvest.config	and exits the program printing a message of initial set up done
+		if not os.path.isfile(setup_archives['config_path']):
+			with open(setup_archives['config_path'], 'w') as setup_archives['config_file']:
+				setup_archives['config_file'].write(\
+				"[SETUP]" + "\n" \
+				"INITIAL_SETUP_DONE = true" + '\n' \
+				"BASE_CURRENCY = USD" + '\n' \
+				"" + '\n' \
+				"[PATHS]" + '\n' \
+				"SETUP_DIR =" + setup_archives['dir'] + '\n' \
+				"CONFIG_FILE =" + setup_archives['config_path']  + '\n' \
+				"DATA_SETS_FILE =" + setup_archives['data_sets_path'] + '\n' \
+				"DATA_SETS_DIR =" + setup_archives['data_sets_dir'] + '\n' \
+				"UPDATE_FILE =" + setup_archives['update_file'] + '\n' \
+				"" + '\n' \
+				"[DATA_SET]" + '\n' \
+				"CURRENT =" + setup_archives['data_sets_dir'] + "dataSet1.json" + '\n') 
+			print("Initial set up done; run checkinv -h/--help to know what you can do")
+			exit()
+
+#Transforms the info from .config in a dict
 def dict_from_parser() -> dict:
 	path: str = "/home/" + getuser() + "/.config/checkInvest/checkInvest.config"
 	parser: configparser = configparser.ConfigParser()

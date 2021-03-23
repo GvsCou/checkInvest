@@ -168,11 +168,15 @@ class SwitchStatement:
 	def switch(self) -> None:
 		case_num: int = 1 
 		for arg in self.all_options:
-			if arg == list(self.parsed_args.keys()).pop(0):
-				case_num -= 1
-				break
-			else:
-				case_num += 1
+			try:
+				if arg == list(self.parsed_args.keys()).pop(0):
+					case_num -= 1
+					break
+				else:
+					case_num += 1
+			except:
+				print("No argument given; run 'checkinv -h/--help to know what you can do")
+				exit()
 		getattr(self, "case_" + str(case_num) , lambda: None)()
 		return None
 	
@@ -367,89 +371,13 @@ class Entry:
 		self.config_dict: dict = configOptions.dict_from_parser()
 		self.current_path: str = self.config_dict['DATA_SET']['current']
 
-	class DICT_MODES(enum.Enum):
-		OLD = 0
-		NEW = 1
-		BRAND_NEW = 2
-
-	def new_dict(self, mode: int, price: float, quantity: float, ticker: str="") -> dict:
-		"""Returns a dict to an empty .json (DICT_MODES.BRAND_NEW) and to non empty ones by adding either a new
-		key (DICT_MODES.NEW and ticker != "") or appending to an existing one (DICT_MODES.OLD and ticker = "")"""
-
-		c_dict: dict = {}
-	
-		if mode == self.DICT_MODES.OLD:
-			c_dict = {
-				"price": price,
-				"quantity": quantity,
-				"date": str(datetime.date.today())
-			}
-	
-		elif mode == self.DICT_MODES.NEW:
-			c_dict = { 
-				"entry_1": {
-					"price": price,
-					"quantity": quantity,
-					"date": str(datetime.date.today())
-				}
-			}
-		
-		elif mode == self.DICT_MODES.BRAND_NEW:
-			c_dict = {
-				ticker: { 
-					"entry_1": {
-						"price": price,
-						"quantity": quantity,
-						"date": str(datetime.date.today())
-					}
-				}
-			}
-		
-		return c_dict
-
-
-	def add_new(self, ticker: str, price: float, quantity: float, mode: int=DICT_MODES.NEW) -> None:
-		"""Function that outputs to either an empty (DICT_MODES.BRAND_NEW) or
-		to a non empty (DICT_MODES.NEW) .json"""
-
-		path: str = self.current_path
-
-		if mode == self.DICT_MODES.NEW:
-			new_entry: dict = self.new_dict(mode, price, quantity)
-			old_entry: dict = self.json_handler.get_json(path)	
-			old_entry[ticker] = new_entry
-			self.json_handler.dump_json(path, old_entry)
-	
-		elif mode == self.DICT_MODES.BRAND_NEW:
-			new_entry: dict = self.new_dict(mode, price, quantity, ticker)
-			self.json_handler.dump_json(path, new_entry)
-		print(ticker + " entry added")
-
-	def add_to_old(self, ticker: str, price: float, quantity: float) -> None:
-		"""Function that outputs to an non empty .json that already has the key (ticker)"""
-
-		path: str = self.current_path
-		old_entry: dict = self.json_handler.get_json(path)
-		
-		i: int = 0 
-		for key in old_entry[ticker]:
-			if 'entry_' in key:
-				i += 1
-	
-		old_entry[ticker]['entry_' + str(i + 1)] = self.new_dict(self.DICT_MODES.OLD, price, quantity)
-	
-		self.json_handler.dump_json(path, old_entry)
-		print(ticker + " entry added")
-	
-
 	def add_entry(self, data: list, is_interactive: bool):
-		"""Adds a new entry to the current data set by defining if the output .json is either 
-		empty (DICT_MODES.BRAND_NEW), not empty, but without the given key (ticker), or not empty
-		with the given key.
-
-		Then it selects between add_to_old(self, ticker: str) and add_new(self, ticker: str,
-		mode: int=DICT_MODES.NEW)"""
-
+		"""Adds a new entry to the current data set, by finding out if it's empty (except),
+		if the given ticker already exists as key (try: [...] if ticker in py_dict:...) or
+		if the given ticker is a new key (try: [...] else:...)
+		"""
+		#This if-else statements is responsible to define if there should be or not
+		#interactive mode (if is_interactive or not data:...)
 		if is_interactive or not data:
 			ticker: str = input("Enter the asset name: ").upper()
 			price: float = float(input("Enter the asset's price: ").replace(",","."))
@@ -462,19 +390,52 @@ class Entry:
 			ticker: str = data[0].upper()
 			price: float = float(data[1].replace(",","."))
 			quantity: float = float(data[2].replace(",","."))
-		path: str = self.current_path
-		if os.stat(path).st_size == 0:
-			self.add_new(ticker, price, quantity, self.DICT_MODES.BRAND_NEW)
-		else:
-			py_dict: dict = self.json_handler.get_json(path)
-		
-			for key in py_dict:
-				if key == ticker:
-					self.add_to_old(ticker, price, quantity)
-					return None
-			
-			self.add_new(ticker, price, quantity)
-			
+
+		#Dict that will an existing one (try) or a brand new one (except)
+		py_dict: dict = {}	
+		try:
+			#Gets current data set as a dict
+			py_dict = self.json_handler.get_json(self.current_path)
+
+			#Checks if the ticker is already a key in py_dict,
+			#so that it can act accordingly to add it to the data set
+			if ticker in py_dict:
+				#Gets all entries of the ticker as a dict
+				ticker_entries: dict = py_dict[ticker]
+				#Gets number of entries to append it + 1 to the new 'entry_N' key
+				entries_num: int = len(ticker_entries.keys())		
+				#Adds a new entry with the price (data[1]), quantity (data[2]) and date
+				ticker_entries['entry_{}'.format(entries_num + 1)] = {
+															'price': price,
+															'quantity': quantity,
+															'date': str(datetime.date.today())
+				}
+				#Substitutes old dict (py_dict[ticker]) with a new one (ticker_entries)
+				py_dict[ticker] = ticker_entries
+			else:
+				#Adds ticker as a new key to py_dict
+				py_dict[ticker] = {
+								 'entry_1': {
+									'price': price,
+									'quantity': quantity,
+									'date': str(datetime.date.today())	
+								}
+				}
+		except:
+			#Dumps a completly new dict on current dataSetN
+			py_dict = {
+					ticker: {
+						'entry_1': {
+							'price': price,
+							'quantity': quantity,
+							'date': str(datetime.date.today())
+						}
+					}
+			}
+
+		#Dumps changed or new py_dict in current dataSetN
+		self.json_handler.dump_json(self.current_path, py_dict)
+
 
 	def table_mode(self, tickers: list) -> None:
 		"""This function is responsible for displaying the assets, their quantity, current price and value
