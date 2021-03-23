@@ -468,8 +468,11 @@ class Entry:
 			asset = Asset(ticker)
 			grapheme: str = asset.get_grapheme()
 			qtd: float = asset.get_qtd()
-			price_dict: dict = self.json_handler.get_json(self.config_dict['PATHS']['update_file'])\
-			if os.stat(self.config_dict['PATHS']['update_file']).st_size != 0 else {}
+			#Gets a dict from all the prices in the update_file.json
+			try:
+				price_dict: dict = self.json_handler.get_json(self.config_dict['PATHS']['update_file'])
+			except:
+				price_dict: dict = {}	
 			price: float = price_dict[ticker] if ticker in price_dict \
 			else new_ticker(ticker, asset)
 			print("{:<15}{:<15}{:<15}".format(ticker, str(qtd), "{} ".format(grapheme) + \
