@@ -333,10 +333,6 @@ class Updater:
 			self.fill_non_empty([asset])
 		except:
 			self.fill_empty([asset])
-		#if os.stat(self.update_file_path).st_size == 0:
-			#self.fill_empty([asset])
-		#else:
-			#self.fill_non_empty([asset])
 		return None
 
 	def update_data_set(self, data_sets: list) -> None:
@@ -389,12 +385,12 @@ class Entry:
 			quantity: float = float(input("Enter the asset's quantity: ").replace(",","."))
 		elif len(data) < 3:
 			print("In non-interactive mode, you must enter these arguments in the following order: " + 
-			"ticker, price, quantity")
+			"ticker, quantity, price ")
 			exit()
 		else:
 			ticker: str = data[0].upper()
-			price: float = float(data[1].replace(",","."))
-			quantity: float = float(data[2].replace(",","."))
+			quantity: float = float(data[1].replace(",","."))
+			price: float = float(data[2].replace(",","."))
 
 		#Dict that will an existing one (try) or a brand new one (except)
 		py_dict: dict = {}	
@@ -440,6 +436,8 @@ class Entry:
 
 		#Dumps changed or new py_dict in current dataSetN
 		self.json_handler.dump_json(self.current_path, py_dict)
+		#Tells the user what was done
+		print("{} was added with the following quantity and price : {} and {}".format(ticker, quantity, price))
 
 
 	def table_mode(self, tickers: list) -> None:
