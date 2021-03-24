@@ -329,10 +329,14 @@ class Updater:
 
 	def add_asset(self, asset: str) -> None:
 		price: float = 0.0		
-		if os.stat(self.update_file_path).st_size == 0:
-			self.fill_empty([asset])
-		else:
+		try:
 			self.fill_non_empty([asset])
+		except:
+			self.fill_empty([asset])
+		#if os.stat(self.update_file_path).st_size == 0:
+			#self.fill_empty([asset])
+		#else:
+			#self.fill_non_empty([asset])
 		return None
 
 	def update_data_set(self, data_sets: list) -> None:
