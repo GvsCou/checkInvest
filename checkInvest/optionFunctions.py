@@ -439,76 +439,80 @@ class Entry:
 		#Tells the user what was done
 		print("{} was added with the following quantity and price : {} and {}".format(ticker, quantity, price))
 
-
-	def table_mode(self, tickers: list) -> None:
-		"""This function is responsible for displaying the assets, their quantity, current price and value
-		as a table"""
-
-		py_dict: dict = self.json_handler.get_json(self.current_path)
-		found: bool = True
-		not_found_list: list = []
-		
-	
-		if tickers:
-			found = False
-			for ticker in tickers:
-				if ticker not in py_dict:
-					not_found_list.append(ticker)
-				else:
-					found = True
-		if found:
-			print("{:.<15}{:.<15}{:.<15}Value".format("Ticker","Quantity", "Price"))
-
-
-		def new_ticker(new_ticker: str, asset_class) -> float:
-			Updater().add_asset(ticker)
-			
-			return asset_class.get_price()
-
-		for ticker in py_dict:
-			if tickers and ticker not in tickers:
-				continue 
-			asset = Asset(ticker)
-			grapheme: str = asset.get_grapheme()
-			qtd: float = asset.get_qtd()
-			#Gets a dict from all the prices in the update_file.json
-			try:
-				price_dict: dict = self.json_handler.get_json(self.config_dict['PATHS']['update_file'])
-			except:
-				price_dict: dict = {}	
-			price: float = price_dict[ticker] if ticker in price_dict \
-			else new_ticker(ticker, asset)
-			print("{:<15}{:<15}{:<15}".format(ticker, str(qtd), "{} ".format(grapheme) + \
-			str(price)) + "{} ".format(grapheme) + str(round(qtd * price, 2)))
-	
-		if not_found_list:
-			print("")
-			for ticker in not_found_list:
-				print(ticker + " not found")
-
-	def json_mode(self, tickers: list):
-		"""Prints the complete data set in json format"""
-
-		path: str = self.current_path
-		py_dict: dict = self.json_handler.get_json(path)
-		not_found_list: list = []
-		print(json.dumps(py_dict, indent=2, sort_keys=True))
-
 	def list_entries(self, given_tickers: list, mode: str):
 		"""Lists the entries of the current data set as a table (table_mode()) or as the other supported
 		formats:
 		1) json(json_mode())"""
 	
-		def switch_list(option: str, tickers: list):
+		def switch_list(option: str, tickers: list, d: dict):
+
+			#Table Mode
+			def table_mode(tickers: list, py_dict: dict) -> None:
+				"""This function is responsible for displaying the assets, their quantity, current price and value
+				as a table"""
+		
+				not_found_list: list = []
+			
+				#If ticker isn't [], check if some of its elements are not in the current data set
+				if tickers:
+					for ticker in tickers:
+						if ticker not in py_dict:
+							not_found_list.append(ticker)
+				#If tickers is different, is because some of its elements were found in the current data set
+				if tickers != not_found_list:
+					print("{:.<15}{:.<15}{:.<15}Value".format("Ticker","Quantity", "Price"))
+		
+				#Function to add a ticker to update_file.json and return its price
+				def new_ticker(new_ticker: str, asset_class) -> float:
+					Updater().add_asset(ticker)
+					
+					return asset_class.get_price()
+		
+				#Loop that goes through all the tickers in the current data set dict (py_dict)
+				#and, if tickers isn't [], excludes those which are not in it
+				for ticker in py_dict:
+					if tickers and ticker not in tickers:
+						continue 
+					#See Asset class
+					asset = Asset(ticker)
+					grapheme: str = asset.get_grapheme()
+					qtd: float = asset.get_qtd()
+					#Gets a dict from all the prices in the update_file.json
+					try:
+						price_dict: dict = self.json_handler.get_json(self.config_dict['PATHS']['update_file'])
+					except:
+						price_dict: dict = {}	
+					#Checks if a ticker is already in update_file.json
+					#and, if it is not, calls new_ticker function
+					price: float = price_dict[ticker] if ticker in price_dict \
+					else new_ticker(ticker, asset)
+					#Prints the found or in tickers ticker
+					print("{:<15}{:<15}{:<15}".format(ticker, str(qtd), "{} ".format(grapheme) + \
+					str(price)) + "{} ".format(grapheme) + str(round(qtd * price, 2)))
+			
+				#Prints, if there were any, not found tickers
+				if not_found_list:
+					print('\n' + "Not Found:")
+					for ticker in not_found_list:
+						print(ticker)
+
+			#Json Mode
+			def json_mode(tickers: list, py_dict: dict):
+				"""Prints the complete data set in json format"""
+		
+				print(json.dumps(py_dict, indent=2, sort_keys=True))
+
 			cases: dict = {
-				'json': self.json_mode
+				'json': json_mode
 			}
-			cases.get(option, self.table_mode)(tickers)
-	
-		if os.stat(self.current_path).st_size == 0:
-			print("There are no entries in the data file")
-		else:
-			switch_list(mode, given_tickers)
+			cases.get(option, table_mode)(tickers, d)
+
+		#Tries to get a dict from current data set; failling prints of the lack of entries	
+		try:
+			py_dict: dict = self.json_handler.get_json(self.current_path)
+			switch_list(mode, given_tickers, py_dict)
+		except:
+			print("No entries in current data set")
 
 ##########################################################################################################################
 
