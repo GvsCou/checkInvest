@@ -1,5 +1,6 @@
-import os, sys, json, configparser, fnmatch, enum, datetime
+import os, sys, configparser, fnmatch, enum, datetime
 import argparse
+from json import load, dump
 from . import configOptions
 from cryptonator import get_available_currencies, get_exchange_rate
 from yahooquery import Ticker
@@ -230,17 +231,17 @@ class JsonHandler:
 	def get_json(self, path: str) -> dict:
 		"""Returns a dict from a .json"""
 
-		r_file: file = open(path, 'r')
-		py_dict: dict = json.load(r_file)
-		r_file.close()
+		with open(path, 'r') as r_file:
+			py_dict: dict = load(r_file)
+
 		return py_dict
 		
 
 	def dump_json(self, path: str, py_dict: dict, indentation: int=2):
 		"""Outputs a .json"""
 
-		w_file: file = open(path, 'w')
-		json.dump(py_dict, w_file, indent=indentation)
+		with open(path, 'w') as w_file:
+			dump(py_dict, w_file, indent=indentation)
 
 ##########################################################################################################################
 
