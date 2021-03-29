@@ -22,7 +22,7 @@ def set_paths_dict() -> dict:
 		paths_dict = {
 			'dir': "/home/" + getuser() + "/.config/checkInvest/",
 			'config_path': "/home/" + getuser() + "/.config/checkInvest/checkInvest.cfg",
-			'data_sets_path': "/home/" + getuser() + "/.config/checkInvest/data_sets.json",
+			'aliases': "/home/" + getuser() + "/.config/checkInvest/aliases.json",
 			'data_sets_dir':  "/home/" + getuser() + "/.config/checkInvest/dataSets/",
 			'update_file': "/home/" + getuser() + "/.config/checkInvest/update_file.json"
 		}	
@@ -30,7 +30,7 @@ def set_paths_dict() -> dict:
 		paths_dict = {
 			'dir': "C:\\Users\\" + getuser() + "\\AppData\\Local\\checkInvest\\",
 			'config_path': "C:\\Users\\" + getuser() + "\\AppData\\Local\\checkInvest\\checkInvest.cfg",
-			'data_sets_path': "C:\\Users\\" + getuser() + "\\AppData\\Local\\checkInvest\\data_sets.json",
+			'aliases': "C:\\Users\\" + getuser() + "\\AppData\\Local\\checkInvest\\aliases.json",
 			'data_sets_dir':  "C:\\Users\\" + getuser() + "\\AppData\\Local\\checkInvest\\dataSets\\",
 			'update_file': "C:\\Users\\" + getuser() + "\\AppData\\Local\\checkInvest\\update_file.json"
 		}
@@ -56,16 +56,12 @@ def check_base_files():
 			#Makes dir for dataSetN.json
 			os.mkdir(setup_archives['data_sets_dir']) 
 
-			#Creates dataSet1.json (alias="Default")
-			with open(setup_archives['data_sets_path'], 'w') as ds_file:
-				data_sets: dict = data_set_dir("data_set_1", "Default", setup_archives['data_sets_dir'] + 
-				"dataSet1.json", is_current=True)
-				json.dump(data_sets, ds_file, sort_keys = True, indent = 2)
-
-			#Creates data_sets.json which contains the path, alias and current (bool) of
-			#all created data sets
-			data_set_1: file = open(data_sets['data_sets']['data_set_1']['path'], 'w')
-			data_set_1.close()
+			#Creates dataSet1.json and aliases.json(alias="Default")
+			with open(setup_archives['aliases'], 'w') as aliases_file:
+				data_sets: dict = {'Default': "dataSet1.json" }
+				json.dump(data_sets, aliases_file, sort_keys = True, indent = 2)
+				data_set_1: file = open(setup_archives['data_sets_dir'] + "DataSet1.json")
+				data_set_1.close()
 
 		#Creates checkInvest.config	and exits the program printing a message of initial set up done
 		if not os.path.isfile(setup_archives['config_path']):
@@ -78,7 +74,7 @@ def check_base_files():
 				"[PATHS]" + '\n' \
 				"SETUP_DIR =" + setup_archives['dir'] + '\n' \
 				"CONFIG_FILE =" + setup_archives['config_path']  + '\n' \
-				"DATA_SETS_FILE =" + setup_archives['data_sets_path'] + '\n' \
+				"ALIASES=" + setup_archives['aliases'] + '\n' \
 				"DATA_SETS_DIR =" + setup_archives['data_sets_dir'] + '\n' \
 				"UPDATE_FILE =" + setup_archives['update_file'] + '\n' \
 				"" + '\n' \

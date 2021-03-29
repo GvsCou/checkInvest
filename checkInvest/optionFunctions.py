@@ -12,8 +12,7 @@ class ArgHandler:
 		self.js = JsonHandler() 				#See JsonHandler Class
 		self.cfg: dict = configOptions.dict_from_parser()	#Dict from 'checkInvest.config'
 		self.ds_summ: dict = self.js.get_json(			#Dict from 'data_sets.json'
-		self.cfg['PATHS']['data_sets_file']
-		)['data_sets']
+		self.cfg['PATHS']['aliases'])
 
 	
 
@@ -209,7 +208,7 @@ class SwitchStatement:
 
 	#Changes current data set
 	def case_5(self) -> None:
-		DataSet().change_current(self.parsed_args['change_current'].pop(-1))
+		DataSet().config_set_current(self.parsed_args['change_current'].pop(-1))
 		return None
 	
 	#Wipe a data set
@@ -303,7 +302,7 @@ class Updater:
 	def __init__(self):
 		self.config_file: dict = configOptions.dict_from_parser()
 		self.json_handler = JsonHandler()
-		self.ds_dict: dict = self.json_handler.get_json(self.config_file['PATHS']['data_sets_file'])['data_sets']
+		self.ds_dict: dict = self.json_handler.get_json(self.config_file['PATHS']['aliases'])
 		self.update_file_path: str = self.config_file['PATHS']['update_file']
 		if not os.path.isfile(self.update_file_path):
 			self.update_file: file = open(self.update_file_path, 'w')
@@ -535,7 +534,7 @@ class DataSet:
 
 	def __init__(self):
 		self.json_handler = JsonHandler()
-		self.dss_paths: str = configOptions.dict_from_parser()['PATHS']['data_sets_file']
+		self.dss_paths: str = configOptions.dict_from_parser()['PATHS']['aliases']
 		self.dss_dir_path: str = configOptions.dict_from_parser()['PATHS']['data_sets_dir']
 		self.all_dss: dict = self.json_handler.get_json(self.dss_paths)
 		self.data_set_inner = self.__DataSetInner(self.dss_paths, self.all_dss)
@@ -568,17 +567,15 @@ class DataSet:
 		
 	#Changes ['CURRENT_DATA_SET']['path'] in checkInvest.config
 	def config_set_current(self, new_current: str) -> None:
-		def get_path(alias: str) -> str:
-			path: str = ""
-			for key in self.all_dss:
-				for key2 in self.all_dss[key]:
-					if self.all_dss[key][key2].get('alias', "") == alias:
-						path = self.all_dss[key][key2].get('path', "")
-						break
-			return path
+		aliases: dict = self.json_handler.get_json(self.dss_paths)
+		try:
+			path: str = self.dss_dir_path + [aliases[foo] for foo in aliases if foo == new_current].pop()
+		except:
+			print("{} not found".format(new_current))
+			exit()
 		parser = configparser.ConfigParser()
 		parser.read(configOptions.dict_from_parser()['PATHS']['config_file'])
-		parser.set('CURRENT_DATA_SET', 'path', get_path(new_current))
+		parser.set('CURRENT_DATA_SET', 'path', path)
 		parser.set('CURRENT_DATA_SET', 'alias', new_current)
 		with open(configOptions.dict_from_parser()['PATHS']['config_file'], 'w') as config_file:
 			parser.write(config_file)
@@ -611,25 +608,23 @@ class DataSet:
 					
 	def show_current(self) -> None:
 		"""Just shows the current"""
-		for key in self.all_dss:
-			for key2 in self.all_dss[key]:
-				if self.all_dss[key][key2].get('current', False):
-					print("Current data set: " + self.all_dss[key][key2].get('alias', "Not Found"))
-					return None
+		print("Current data set: {}".format(configOptions.dict_from_parser()['CURRENT_DATA_SET']['alias']))
+		return None
 
 	def list_existing(self) -> None:
 		"""Lits all created data sets"""
-		path: str = configOptions.dict_from_parser()['PATHS']['data_sets_file']
-		if os.stat(path).st_size == 0:
-			print("There are no data sets")
-		else:
+		path: str = configOptions.dict_from_parser()['PATHS']['aliases']
+		try:
 			py_dict: dict = JsonHandler().get_json(path)
-			aliases: list = []
-			for key in py_dict:
-				for key2 in py_dict[key]:
-					aliases.append(py_dict[key][key2].get('alias'))
-			for i in range(0, len(aliases), 1):
-				print(str(i) + ": " + aliases[i]) 
+		except:
+			print("There are no data sets")
+			exit()
+
+		aliases: list = []
+		for key in py_dict:
+			aliases.append(key)
+		for i in range(0, len(aliases), 1):
+			print(str(i) + ": " + aliases[i]) 
 		return None
 
 	def delete(self, aliases: list) -> None:
