@@ -111,6 +111,12 @@ class ArgHandler:
 			help="updates data sets",
 			metavar="ALIAS"
 		)
+		#Change .cfg options
+		parser.add_argument(
+			'-c', '--config',
+			action='store_true',
+			help="changes user related options"
+		)
 		#Interactive Mode
 		parser.add_argument(
 			'-i', '--interactive',
@@ -160,7 +166,8 @@ class SwitchStatement:
 				"change_current",
 				"wipe_data_set",
 				"delete_data_set",
-				"update_data_set"
+				"update_data_set",
+				"config"
 		]
 		
 	
@@ -222,6 +229,10 @@ class SwitchStatement:
 	#Updates the current or the selected data sets
 	def case_8(self) -> None:
 		Updater().update_data_set(self.parsed_args['update_data_set'])
+	
+	def case_9(self) -> None:
+		Cfg().edit()
+		return None
 	
 class JsonHandler:
 	"""Simple class that handles getting a dict from a .json and outputting a dict to a .json """
@@ -653,3 +664,31 @@ class DataSet:
 		return None
 
 ##########################################################################################################################
+
+class Cfg:
+	"""Class resposnible for changing options of .cfg"""
+
+	def __init__(self):
+		self.js = JsonHandler()
+		self.cfg: dict = configOptions.dict_from_parser()
+
+	def edit(self):
+		"""Function responsible for editing .cfg"""
+
+		while True:
+			print("1: Currency (currently: {})".format(self.cfg['SETUP']['base_currency']))
+
+			cases: dict = {
+						"1": ['base_currency', "Enter new currency"]
+			}
+			user_input: str = input("Choose an option: ")
+
+			if user_input in cases:
+				parser = configparser.ConfigParser()
+				parser.read(self.cfg['PATHS']['config_file'])
+				parser.set('SETUP', cases[user_input][0], input("{}: ".format(cases[user_input][1]).upper()))
+				with open(self.cfg['PATHS']['config_file'], 'w') as cfg_file:
+					parser.write(cfg_file)
+				break
+			else:
+				print("Invalid option")
