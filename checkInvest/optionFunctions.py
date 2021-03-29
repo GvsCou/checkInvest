@@ -384,17 +384,25 @@ class Entry:
 		#This if-else statements is responsible to define if there should be or not
 		#interactive mode (if is_interactive or not data:...)
 		if is_interactive or not data:
-			ticker: str = input("Enter the asset name: ").upper()
-			price: float = float(input("Enter the asset's price: ").replace(",","."))
-			quantity: float = float(input("Enter the asset's quantity: ").replace(",","."))
+			try:
+				ticker: str = input("Enter the asset name: ").upper()
+				quantity: float = float(input("Enter the asset's quantity: ").replace(",","."))
+				price: float = float(input("Enter the asset's price: ").replace(",","."))
+			except:
+				print("Quantity and price must be numbers - both '.' and ',' are valid")
+				exit()
 		elif len(data) < 3:
 			print("In non-interactive mode, you must enter these arguments in the following order: " + 
 			"ticker, quantity, price ")
 			exit()
 		else:
-			ticker: str = data[0].upper()
-			quantity: float = float(data[1].replace(",","."))
-			price: float = float(data[2].replace(",","."))
+			try:
+				ticker: str = data[0].upper()
+				quantity: float = float(data[1].replace(",","."))
+				price: float = float(data[2].replace(",","."))
+			except:
+				print("Quantity and price must be numbers - both '.' and ',' are valid")
+				exit()
 
 		#Dict that will an existing one (try) or a brand new one (except)
 		py_dict: dict = {}	
