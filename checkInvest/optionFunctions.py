@@ -7,8 +7,7 @@ from yahooquery import Ticker
 
 
 class ArgHandler:
-	"""Class responsible for dealing with user input (sys.argv)"""
-
+	"""Class responsible for dealing with user input (sys.argv)""" 
 	def __init__(self):
 		self.js = JsonHandler() 				#See JsonHandler Class
 		self.cfg: dict = configOptions.dict_from_parser()	#Dict from 'checkInvest.config'
@@ -534,45 +533,11 @@ class DataSet:
 					aliases.append(self.all_dss[key][key2].get('alias', None))
 			return aliases
 
-		def get_path(self, alias: str) -> str:
-			path: str = ""
-			for key in self.all_dss:
-				for key2 in self.all_dss[key]:
-					if self.all_dss[key][key2].get('alias', "") == alias:
-						path = self.all_dss[key][key2].get('path', "")
-						break
-			return path
-
-		def config_set_current(self, path: str) -> None:
-			parser = configparser.ConfigParser()
-			parser.read(configOptions.dict_from_parser()['PATHS']['config_file'])
-			parser.set('DATA_SET', 'current', path)
-			config_file: file = open(configOptions.dict_from_parser()['PATHS']['config_file'], 'w')
-			parser.write(config_file)
-			config_file.close()
-			return None
-
-
-		def change_current(self, new_current: str) -> None:
-			#change .config
-			path: str = self.get_path(new_current)	
-			self.config_set_current(path)
-			#change data_sets
-			py_dict: dict = self.json_handler.get_json(self.dss_paths)
-			for key in list(py_dict):
-				for key2 in list(py_dict[key]):
-					if py_dict[key][key2].get('alias', "") == new_current:
-					 	py_dict[key][key2]['current'] = True
-					else:
-						py_dict[key][key2]['current'] = False
-			self.json_handler.dump_json(self.dss_paths, py_dict)
-			print("'" + new_current + "' is the new current data set")
-			return None
-		
 	def __init__(self):
+		self.json_handler = JsonHandler()
 		self.dss_paths: str = configOptions.dict_from_parser()['PATHS']['data_sets_file']
 		self.dss_dir_path: str = configOptions.dict_from_parser()['PATHS']['data_sets_dir']
-		self.all_dss: dict = JsonHandler().get_json(self.dss_paths)
+		self.all_dss: dict = self.json_handler.get_json(self.dss_paths)
 		self.data_set_inner = self.__DataSetInner(self.dss_paths, self.all_dss)
 
 
@@ -605,7 +570,42 @@ class DataSet:
 		"""Just changes the current"""
 		aliases: list = self.data_set_inner.get_existing_aliases()
 		if given_name in aliases:
-			self.data_set_inner.change_current(given_name)
+
+			#Changes ['DATA_SET']['current'] in checkInvest.config
+			def config_set_current(new_current: str) -> None:
+
+				def get_path(alias: str) -> str:
+					path: str = ""
+					for key in self.all_dss:
+						for key2 in self.all_dss[key]:
+							if self.all_dss[key][key2].get('alias', "") == alias:
+								path = self.all_dss[key][key2].get('path', "")
+								break
+					return path
+
+				parser = configparser.ConfigParser()
+				parser.read(configOptions.dict_from_parser()['PATHS']['config_file'])
+				parser.set('DATA_SET', 'current', get_path(new_current))
+				with open(configOptions.dict_from_parser()['PATHS']['config_file'], 'w') as config_file:
+					parser.write(config_file)
+				return None
+
+			#Changes the value of the current key in the dict from data_sets.json
+			def change_data_sets(new_current: str) -> None:
+				py_dict: dict = self.json_handler.get_json(self.dss_paths)
+				for key in list(py_dict):
+					for key2 in list(py_dict[key]):
+						if py_dict[key][key2].get('alias', "") == new_current:
+					 		py_dict[key][key2]['current'] = True
+						else:
+							py_dict[key][key2]['current'] = False
+				self.json_handler.dump_json(self.dss_paths, py_dict)
+				print("'" + new_current + "' is the new current data set")
+				return None
+
+			config_set_current(given_name)
+			change_data_sets(given_name)
+
 		else:
 			print("No {} found".format(given_name))
 		return None
