@@ -259,7 +259,7 @@ class Asset:
 		else self.json_handler.get_json(abs_path + "currency-format.json")[self.currency]['symbol'].get('grapheme', "$")
 
 	def get_qtd(self) -> float:
-		current_data: dict = self.json_handler.get_json(configOptions.dict_from_parser()['DATA_SET']['current'])
+		current_data: dict = self.json_handler.get_json(configOptions.dict_from_parser()['CURRENT_DATA_SET']['path'])
 		for key in current_data:
 			qtd: float = 0.0
 			if key != self.ticker:
@@ -369,7 +369,7 @@ class Entry:
 	def __init__(self):
 		self.json_handler = JsonHandler()
 		self.config_dict: dict = configOptions.dict_from_parser()
-		self.current_path: str = self.config_dict['DATA_SET']['current']
+		self.current_path: str = self.config_dict['CURRENT_DATA_SET']['path']
 
 	def add_entry(self, data: list, is_interactive: bool):
 		"""Adds a new entry to the current data set, by finding out if it's empty (except),
@@ -566,7 +566,7 @@ class DataSet:
 		print(alias + " was created and is now the new current data set")
 
 		
-	#Changes ['DATA_SET']['current'] in checkInvest.config
+	#Changes ['CURRENT_DATA_SET']['path'] in checkInvest.config
 	def config_set_current(self, new_current: str) -> None:
 		def get_path(alias: str) -> str:
 			path: str = ""

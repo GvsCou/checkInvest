@@ -90,7 +90,7 @@ def check_base_files():
 
 #Transforms the info from .config in a dict
 def dict_from_parser() -> dict:
-	path: str = set_paths()['config_path']
+	path: str = set_paths_dict()['config_path']
 	parser: configparser = configparser.ConfigParser()
 	parser.read(path)
 	return parser._sections
