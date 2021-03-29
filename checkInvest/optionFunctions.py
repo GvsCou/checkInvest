@@ -637,15 +637,18 @@ class DataSet:
 		return None
 
 	def wipe(self, aliases: list) -> None:
-		"""Remove all entries from a data set by truncating it with '0' as an argument"""
-		for alias in aliases.copy():
+		"""Remove all entries from a data set by truncating"""
+
+		for alias in list(aliases):
 			for key in self.all_dss:
-				for key2 in self.all_dss[key]:
-					if self.all_dss[key][key2].get('alias', "") == alias:	
-						with open(self.all_dss[key][key2]['path'], 'w') as data_set:
-							data_set.truncate(0)
-							print("{} cleaned".format(alias))
-							aliases.remove(alias)
+				if key == alias:	
+					with open("{}{}".format(self.dss_dir_path, self.all_dss[key]), 'w') as data_set:
+						#Cleans data set
+						data_set.truncate(0)
+						print("{} cleaned".format(alias))
+						aliases.remove(alias)
+
+		#Lets the user know if there were any non found aliases
 		if aliases:
 			for elem in aliases:
 				print("{} not found".format(elem))
