@@ -540,7 +540,7 @@ class DataSet:
 		self.data_set_inner = self.__DataSetInner(self.dss_paths, self.all_dss)
 
 
-	def add_new(self, given_name: str):
+	def add_new(self, given_name: str) -> None:
 		"""Adds a new data set and sets it to be current"""
 
 		#Checks if the given name already exists; if so, exits the script
@@ -563,9 +563,12 @@ class DataSet:
 		self.config_set_current(given_name)
 		print(given_name + " was created and is now the new current data set")
 
-		
-	#Changes ['CURRENT_DATA_SET']['path'] in checkInvest.config
+		return None
+
 	def config_set_current(self, new_current: str) -> None:
+		"""Changes 'path' and 'aliases' from checkInvest.cfg [CURRENT_DATA_SET]"""
+
+		#Tries to get the N for dataSetN.json; if the list is empty, is because new_current is not an alias
 		try:
 			path: str = self.dss_dir_path + [self.all_dss[foo] for foo in self.all_dss if foo == new_current].pop()
 		except:
@@ -577,33 +580,9 @@ class DataSet:
 		parser.set('CURRENT_DATA_SET', 'alias', new_current)
 		with open(configOptions.dict_from_parser()['PATHS']['config_file'], 'w') as config_file:
 			parser.write(config_file)
+		print("'{}' is the new current data set".format(new_current))
 		return None
 
-	def change_current(self, given_name: str) -> None:
-		"""Just changes the current"""
-		aliases: list = self.data_set_inner.get_existing_aliases()
-		if given_name in aliases:
-
-			#Changes the value of the current key in the dict from data_sets.json
-			def change_data_sets(new_current: str) -> None:
-				py_dict: dict = self.json_handler.get_json(self.dss_paths)
-				for key in list(py_dict):
-					for key2 in list(py_dict[key]):
-						if py_dict[key][key2].get('alias', "") == new_current:
-					 		py_dict[key][key2]['current'] = True
-						else:
-							py_dict[key][key2]['current'] = False
-				self.json_handler.dump_json(self.dss_paths, py_dict)
-				print("'" + new_current + "' is the new current data set")
-				return None
-
-			self.config_set_current(given_name)
-			change_data_sets(given_name)
-
-		else:
-			print("No {} found".format(given_name))
-		return None
-					
 	def show_current(self) -> None:
 		"""Just shows the current"""
 		print("Current data set: {}".format(configOptions.dict_from_parser()['CURRENT_DATA_SET']['alias']))
