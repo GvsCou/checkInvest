@@ -21,7 +21,7 @@ def set_paths_dict() -> dict:
 	if user_os == "Linux":
 		paths_dict = {
 			'dir': "/home/" + getuser() + "/.config/checkInvest/",
-			'config_path': "/home/" + getuser() + "/.config/checkInvest/checkInvest.config",
+			'config_path': "/home/" + getuser() + "/.config/checkInvest/checkInvest.cfg",
 			'data_sets_path': "/home/" + getuser() + "/.config/checkInvest/data_sets.json",
 			'data_sets_dir':  "/home/" + getuser() + "/.config/checkInvest/dataSets/",
 			'update_file': "/home/" + getuser() + "/.config/checkInvest/update_file.json"
@@ -29,7 +29,7 @@ def set_paths_dict() -> dict:
 	elif user_os == "Windows":
 		paths_dict = {
 			'dir': "C:\\Users\\" + getuser() + "\\AppData\\Local\\checkInvest\\",
-			'config_path': "C:\\Users\\" + getuser() + "\\AppData\\Local\\checkInvest\\checkInvest.config",
+			'config_path': "C:\\Users\\" + getuser() + "\\AppData\\Local\\checkInvest\\checkInvest.cfg",
 			'data_sets_path': "C:\\Users\\" + getuser() + "\\AppData\\Local\\checkInvest\\data_sets.json",
 			'data_sets_dir':  "C:\\Users\\" + getuser() + "\\AppData\\Local\\checkInvest\\dataSets\\",
 			'update_file': "C:\\Users\\" + getuser() + "\\AppData\\Local\\checkInvest\\update_file.json"
@@ -82,14 +82,15 @@ def check_base_files():
 				"DATA_SETS_DIR =" + setup_archives['data_sets_dir'] + '\n' \
 				"UPDATE_FILE =" + setup_archives['update_file'] + '\n' \
 				"" + '\n' \
-				"[DATA_SET]" + '\n' \
-				"CURRENT =" + setup_archives['data_sets_dir'] + "dataSet1.json" + '\n') 
+				"[CURRENT_DATA_SET]" + '\n' \
+				"PATH =" + setup_archives['data_sets_dir'] + "dataSet1.json" + '\n' \
+				"ALIAS = Default" + '\n') 
 			print("Initial set up done; run checkinv -h/--help to know what you can do")
 			exit()
 
 #Transforms the info from .config in a dict
 def dict_from_parser() -> dict:
-	path: str = "/home/" + getuser() + "/.config/checkInvest/checkInvest.config"
+	path: str = set_paths()['config_path']
 	parser: configparser = configparser.ConfigParser()
 	parser.read(path)
 	return parser._sections
