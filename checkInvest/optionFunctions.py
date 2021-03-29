@@ -566,29 +566,27 @@ class DataSet:
 		print(alias + " was created and is now the new current data set")
 
 		
+	#Changes ['DATA_SET']['current'] in checkInvest.config
+	def config_set_current(self, new_current: str) -> None:
+		def get_path(alias: str) -> str:
+			path: str = ""
+			for key in self.all_dss:
+				for key2 in self.all_dss[key]:
+					if self.all_dss[key][key2].get('alias', "") == alias:
+						path = self.all_dss[key][key2].get('path', "")
+						break
+			return path
+		parser = configparser.ConfigParser()
+		parser.read(configOptions.dict_from_parser()['PATHS']['config_file'])
+		parser.set('DATA_SET', 'current', get_path(new_current))
+		with open(configOptions.dict_from_parser()['PATHS']['config_file'], 'w') as config_file:
+			parser.write(config_file)
+		return None
+
 	def change_current(self, given_name: str) -> None:
 		"""Just changes the current"""
 		aliases: list = self.data_set_inner.get_existing_aliases()
 		if given_name in aliases:
-
-			#Changes ['DATA_SET']['current'] in checkInvest.config
-			def config_set_current(new_current: str) -> None:
-
-				def get_path(alias: str) -> str:
-					path: str = ""
-					for key in self.all_dss:
-						for key2 in self.all_dss[key]:
-							if self.all_dss[key][key2].get('alias', "") == alias:
-								path = self.all_dss[key][key2].get('path', "")
-								break
-					return path
-
-				parser = configparser.ConfigParser()
-				parser.read(configOptions.dict_from_parser()['PATHS']['config_file'])
-				parser.set('DATA_SET', 'current', get_path(new_current))
-				with open(configOptions.dict_from_parser()['PATHS']['config_file'], 'w') as config_file:
-					parser.write(config_file)
-				return None
 
 			#Changes the value of the current key in the dict from data_sets.json
 			def change_data_sets(new_current: str) -> None:
@@ -603,7 +601,7 @@ class DataSet:
 				print("'" + new_current + "' is the new current data set")
 				return None
 
-			config_set_current(given_name)
+			self.config_set_current(given_name)
 			change_data_sets(given_name)
 
 		else:
