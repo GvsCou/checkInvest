@@ -562,7 +562,7 @@ class DataSet:
 		JsonHandler().dump_json(self.dss_paths, py_dict)
 		new_data_file: file = open(py_dict['data_sets']['data_set_' + str(i + 1)]['path'], 'w')
 		new_data_file.close()
-		self.data_set_inner.config_set_current(py_dict['data_sets']['data_set_' + str(i + 1)]['path'])
+		self.config_set_current(alias)
 		print(alias + " was created and is now the new current data set")
 
 		
@@ -647,7 +647,8 @@ class DataSet:
 						file_path = self.all_dss[key][key2]['path']
 						os.remove(file_path)
 						if self.all_dss[key][key2].get('current', False): 
-							self.data_set_inner.change_current('Default')
+							self.change_current('Default')
+							self.config_set_current('Default')
 						new_set_dict: dict = JsonHandler().get_json(self.dss_paths)
 						del new_set_dict[key][key2]
 						JsonHandler().dump_json(self.dss_paths, new_set_dict)
