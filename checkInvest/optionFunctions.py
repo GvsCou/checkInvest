@@ -313,7 +313,6 @@ class Updater:
 		py_dict: dict = {}
 		for elem in assets:
 			py_dict[elem] = Asset(elem).get_price()
-			print("{} updated".format(elem))
 		self.json_handler.dump_json(self.update_file_path, py_dict)
 		return None
 
@@ -321,7 +320,6 @@ class Updater:
 		update_file_dict: dict = self.json_handler.get_json(self.update_file_path)	
 		for elem in assets:
 			update_file_dict[elem] = Asset(elem).get_price()
-			print("{} updated".format(elem))
 		self.json_handler.dump_json(self.update_file_path, update_file_dict)
 		return None
 
@@ -334,30 +332,38 @@ class Updater:
 		return None
 
 	def update_data_set(self, data_sets: list) -> None:
-		"""Function responsible for updating the current data set - if no argument is given - 
-		or the given data sets"""
+		"""Function responsible for updating data sets"""
 
-		non_empty_data: list = []
-		present_assets: list = []
-		for key in self.ds_dict:
-			if self.ds_dict[key].get('alias', "") in data_sets:
-				if os.stat(self.ds_dict[key]['path']).st_size != 0:
-					non_empty_data.append(self.ds_dict[key]['alias'])
-					[present_assets.append(foo) for foo in \
-					self.json_handler.get_json(self.ds_dict[key]['path'])\
-					if foo not in present_assets]
-					
-		if not non_empty_data:
-			print("No valid data set found")
+		#Updatable data sets
+		updatable_dss: list = []
+		#Assests that will be updated
+		updatable_assets: list = []
+		for key in data_sets:
+			if key in self.ds_dict:
+				try:
+					[updatable_assets.append(foo) for foo in self.json_handler.get_json(\
+					"{}{}".format(self.config_file['PATHS']['data_sets_dir'], self.ds_dict[key]))\
+					if foo not in updatable_assets]
+					updatable_dss.append(key)
+				except:
+					lambda: None
+
+		if not updatable_assets:
+			print("No valid data set given")
 			exit()
-		
-		if os.stat(self.update_file_path).st_size == 0:
-			self.fill_empty(present_assets)
-		else:
-			self.fill_non_empty(present_assets)
-		if data_sets != non_empty_data:
-			print("{} not found or empty".format(", ".join([foo for foo in data_sets \
-			if foo not in non_empty_data])))
+
+		if data_sets != updatable_dss:
+			print("{} not found or empty".format(", ".join([foo for foo in data_sets\
+			if foo not in updatable_dss])))
+
+		try:
+			self.fill_non_empty(updatable_assets)
+		except:
+			self.fill_empty(updatable_assets)
+
+		#Lets the user know of which data sets were updated
+		[print("{} updated".format(foo)) for foo in updatable_dss]
+
 		return None
 	
 ##########################################################################################################################
