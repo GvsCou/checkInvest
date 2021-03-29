@@ -523,27 +523,11 @@ class Entry:
 class DataSet:
 	"""Class responsible for data set operations, like adding, deleting and clearing"""
 	
-	class __DataSetInner:
-		"""Inner Class that has some functions related to the upper class main ones"""
-
-		def __init__(self, adsp:str, ad: dict, js=JsonHandler()):
-			self.all_dss: dict = ad
-			self.dss_paths: str = adsp
-			self.json_handler = js
-		
-		def get_existing_aliases(self) -> list:
-			aliases: list = []
-			for key in self.all_dss:
-				for key2 in self.all_dss[key]:
-					aliases.append(self.all_dss[key][key2].get('alias', None))
-			return aliases
-
 	def __init__(self):
 		self.json_handler = JsonHandler()
 		self.dss_paths: str = configOptions.dict_from_parser()['PATHS']['aliases']
 		self.dss_dir_path: str = configOptions.dict_from_parser()['PATHS']['data_sets_dir']
 		self.all_dss: dict = self.json_handler.get_json(self.dss_paths)
-		self.data_set_inner = self.__DataSetInner(self.dss_paths, self.all_dss)
 
 
 	def add_new(self, given_name: str) -> None:
