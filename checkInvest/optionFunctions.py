@@ -543,33 +543,31 @@ class DataSet:
 	def add_new(self, given_name: str):
 		"""Adds a new data set and sets it to be current"""
 
-		alias: str = given_name
-		py_dict: dict = self.all_dss
-		i: int = 0
-		for key in list(py_dict):
-			for key2 in list(py_dict[key]):
-				i += 1
-				if py_dict[key][key2].get('current', False):
-					 py_dict[key][key2]['current'] = False
+		#Checks if the given name already exists; if so, exits the script
+		if given_name in self.all_dss:
+			print("'{}' already in use".format(given_name))
+			exit()
 
-		py_dict['data_sets']['data_set_' + str(i + 1)] = {
-						'alias': alias,
-						'current': True,
-						'path': self.dss_dir_path + "dataSet" + str(i + 1) + ".json"
-		}
-		
-		JsonHandler().dump_json(self.dss_paths, py_dict)
-		new_data_file: file = open(py_dict['data_sets']['data_set_' + str(i + 1)]['path'], 'w')
+		#Number to be appended to new dataSetN.json
+		new_ds_num: int = sum([1 for key in self.all_dss]) + 1
+
+		#Adds new data set to aliases.json
+		self.all_dss[given_name] = "dataSet{}.json".format(new_ds_num)
+		JsonHandler().dump_json(self.dss_paths, self.all_dss)
+
+		#Creates new dataSetN.json
+		new_data_file: file = open("{}{}".format(self.dss_dir_path, self.all_dss[given_name]), 'w')
 		new_data_file.close()
-		self.config_set_current(alias)
-		print(alias + " was created and is now the new current data set")
+
+		#Changes the current data set to the newly created one
+		self.config_set_current(given_name)
+		print(given_name + " was created and is now the new current data set")
 
 		
 	#Changes ['CURRENT_DATA_SET']['path'] in checkInvest.config
 	def config_set_current(self, new_current: str) -> None:
-		aliases: dict = self.json_handler.get_json(self.dss_paths)
 		try:
-			path: str = self.dss_dir_path + [aliases[foo] for foo in aliases if foo == new_current].pop()
+			path: str = self.dss_dir_path + [self.all_dss[foo] for foo in self.all_dss if foo == new_current].pop()
 		except:
 			print("{} not found".format(new_current))
 			exit()
