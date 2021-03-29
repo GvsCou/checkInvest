@@ -607,29 +607,33 @@ class DataSet:
 	def delete(self, aliases: list) -> None:
 		"""Deletes a data set"""
 
-		file_path: str = ""
-		
 		for alias in aliases.copy():
-			for key in list(self.all_dss):
-				for key2 in list(self.all_dss[key]):
-					if alias == "Default":
-						self.wipe(["Default"])
-						aliases.remove("Default")
-						print("'Default' is never deleted, only cleaned")
-					elif alias == self.all_dss[key][key2].get('alias', ""):
-						file_path = self.all_dss[key][key2]['path']
-						os.remove(file_path)
-						if self.all_dss[key][key2].get('current', False): 
-							self.change_current('Default')
-							self.config_set_current('Default')
-						new_set_dict: dict = JsonHandler().get_json(self.dss_paths)
-						del new_set_dict[key][key2]
-						JsonHandler().dump_json(self.dss_paths, new_set_dict)
-						print(alias + " deleted")
+			if alias == "Default":
+				self.wipe(["Default"])
+				aliases.remove("Default")
+				print("'Default' is never deleted, only cleaned")
+			else:
+				key_num: int = len(self.all_dss.keys())
+				for key in list(self.all_dss):
+					#Checks if alias exists
+					if alias == key:
+						#Removes dataSetN.json
+						os.remove("{}{}".format(self.dss_dir_path, self.all_dss[key]))
+						#Changes [CURRENT_DATA_SET] if it's being deleted
+						self.config_set_current("Default") if configOptions.dict_from_parser()['CURRENT_DATA_SET']['alias'] == alias\
+						else lambda: None
+						#Deletes alias from self.all_dss
+						del self.all_dss[alias]
+						print("{} deleted".format(alias))
+						#Removes alias from aliases to do a boolean check at the end of this function
 						aliases.remove(alias)
+				if key_num != len(self.all_dss.keys()):
+					self.json_handler.dump_json(self.dss_paths, self.all_dss)
+		
+		#Lets the user know which aliases were not found
 		if aliases:
 			for elem in aliases:
-				print("{} not found".format(alias))
+				print("{} not found".format(elem))
 		return None
 
 	def wipe(self, aliases: list) -> None:
