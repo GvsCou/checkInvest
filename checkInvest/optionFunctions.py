@@ -578,7 +578,8 @@ class DataSet:
 			return path
 		parser = configparser.ConfigParser()
 		parser.read(configOptions.dict_from_parser()['PATHS']['config_file'])
-		parser.set('DATA_SET', 'current', get_path(new_current))
+		parser.set('CURRENT_DATA_SET', 'path', get_path(new_current))
+		parser.set('CURRENT_DATA_SET', 'alias', new_current)
 		with open(configOptions.dict_from_parser()['PATHS']['config_file'], 'w') as config_file:
 			parser.write(config_file)
 		return None

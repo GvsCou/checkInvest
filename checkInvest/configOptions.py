@@ -94,3 +94,5 @@ def dict_from_parser() -> dict:
 	parser: configparser = configparser.ConfigParser()
 	parser.read(path)
 	return parser._sections
+	exit()
+
